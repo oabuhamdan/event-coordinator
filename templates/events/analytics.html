@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics - {{ event.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="fas fa-chart-bar me-2"></i>Event Analytics</h2>
+        <h4 class="text-muted">{{ event.title }}</h4>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <h2>{{ response_counts.yes }}</h2>
+                <p class="mb-0">Yes Responses</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body text-center">
+                <h2>{{ response_counts.maybe }}</h2>
+                <p class="mb-0">Maybe Responses</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body text-center">
+                <h2>{{ response_counts.no }}</h2>
+                <p class="mb-0">No Responses</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body text-center">
+                <h2>{{ total_responses }}</h2>
+                <p class="mb-0">Total Responses</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Response Details</h5>
+            </div>
+            <div class="card-body">
+                {% if responses %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Response</th>
+                                    <th>Responded At</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for response in responses %}
+                                <tr>
+                                    <td>{{ response.user.username }}</td>
+                                    <td>
+                                        {% if response.response == 'yes' %}
+                                            <span class="badge bg-success">{{ response.get_response_display }}</span>
+                                        {% elif response.response == 'maybe' %}
+                                            <span class="badge bg-warning">{{ response.get_response_display }}</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ response.get_response_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ response.responded_at|date:"M d, Y H:i" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No responses yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Event Details</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Date & Time:</strong><br>{{ event.date_time|date:"l, F d, Y H:i" }}</p>
+                <p><strong>Duration:</strong><br>{{ event.duration_hours }} hours</p>
+                {% if event.location %}
+                    <p><strong>Location:</strong><br>{{ event.location }}</p>
+                {% endif %}
+                {% if event.max_participants %}
+                    <p><strong>Max Participants:</strong><br>{{ event.max_participants }}</p>
+                {% endif %}
+                <p><strong>Status:</strong><br>
+                    {% if event.is_upcoming %}
+                        <span class="badge bg-success">Upcoming</span>
+                    {% else %}
+                        <span class="badge bg-secondary">Past</span>
+                    {% endif %}
+                </p>
+                
+                <hr>
+                <a href="{% url 'events:detail' event.pk %}" class="btn btn-primary btn-block">
+                    <i class="fas fa-eye me-2"></i>View Event
+                </a>
+                <a href="{% url 'events:edit' event.pk %}" class="btn btn-warning btn-block mt-2">
+                    <i class="fas fa-edit me-2"></i>Edit Event
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

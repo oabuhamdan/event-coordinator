@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Organizations - Event Coordinator{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="fas fa-building me-2"></i>Organizations</h2>
+        <p class="text-muted">Discover and subscribe to organizations that interest you.</p>
+    </div>
+</div>
+
+<div class="row">
+    {% for organization in organizations %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            {% if organization.logo %}
+                <img src="{{ organization.logo.url }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ organization.name }}">
+            {% else %}
+                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fas fa-building fa-3x text-muted"></i>
+                </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ organization.name }}</h5>
+                <p class="card-text">{{ organization.description|truncatechars:100 }}</p>
+                {% if organization.website %}
+                    <p class="card-text">
+                        <small class="text-muted">
+                            <i class="fas fa-globe me-1"></i>
+                            <a href="{{ organization.website }}" target="_blank">{{ organization.website }}</a>
+                        </small>
+                    </p>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{% url 'organizations:detail' organization.pk %}" class="btn btn-primary">
+                    <i class="fas fa-eye me-1"></i>View Details
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle me-2"></i>No organizations found.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

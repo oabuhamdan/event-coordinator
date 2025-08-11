@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - {{ organization.name }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="fas fa-tachometer-alt me-2"></i>{{ organization.name }} Dashboard</h2>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ total_subscribers }}</h4>
+                        <p class="mb-0">Total Subscribers</p>
+                    </div>
+                    <div>
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ total_events }}</h4>
+                        <p class="mb-0">Total Events</p>
+                    </div>
+                    <div>
+                        <i class="fas fa-calendar fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ upcoming_events }}</h4>
+                        <p class="mb-0">Upcoming Events</p>
+                    </div>
+                    <div>
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ organization.notification_type|title }}</h4>
+                        <p class="mb-0">Notification Type</p>
+                    </div>
+                    <div>
+                        <i class="fas fa-bell fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Recent Events</h5>
+                <a href="{% url 'events:create' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i>Create Event
+                </a>
+            </div>
+            <div class="card-body">
+                {% if recent_events %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Event</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in recent_events %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ event.title }}</strong><br>
+                                        <small class="text-muted">{{ event.location|truncatechars:30 }}</small>
+                                    </td>
+                                    <td>{{ event.date_time|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        {% if event.is_upcoming %}
+                                            <span class="badge bg-success">Upcoming</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Past</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'events:detail' event.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                                        <a href="{% url 'events:analytics' event.pk %}" class="btn btn-sm btn-outline-info">Analytics</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No events created yet. <a href="{% url 'events:create' %}">Create your first event</a>.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'organizations:availability_analytics' %}" class="btn btn-primary btn-block mb-2">
+                    <i class="fas fa-chart-line me-2"></i>Subscriber Analytics
+                </a>
+                <a href="{% url 'events:create' %}" class="btn btn-success btn-block mb-2">
+                    <i class="fas fa-plus me-2"></i>Create Event
+                </a>
+                <a href="{% url 'organizations:subscribers' %}" class="btn btn-info btn-block mb-2">
+                    <i class="fas fa-users me-2"></i>View Subscribers
+                </a>
+                <a href="{% url 'events:list' %}" class="btn btn-secondary btn-block mb-2">
+                    <i class="fas fa-calendar me-2"></i>All Events
+                </a>
+                <a href="{% url 'organizations:edit_profile' %}" class="btn btn-warning btn-block">
+                    <i class="fas fa-edit me-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

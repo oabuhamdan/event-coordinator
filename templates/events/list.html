@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Events - Event Coordinator{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2><i class="fas fa-calendar me-2"></i>Events</h2>
+    </div>
+    <div class="col-md-4 text-end">
+        {% if user.user_type == 'organization' %}
+            <a href="{% url 'events:create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Create Event
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="btn-group" role="group">
+            <a href="?filter=upcoming" class="btn {% if filter_type == 'upcoming' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                <i class="fas fa-clock me-1"></i>Upcoming
+            </a>
+            <a href="?filter=past" class="btn {% if filter_type == 'past' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                <i class="fas fa-history me-1"></i>Past
+            </a>
+            <a href="?filter=all" class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                <i class="fas fa-list me-1"></i>All
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    {% for event in page_obj %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ event.title }}</h5>
+                <p class="card-text">{{ event.description|truncatechars:100 }}</p>
+                <p class="card-text">
+                    <small class="text-muted">
+                        <i class="fas fa-building me-1"></i>{{ event.organization.name }}<br>
+                        <i class="fas fa-clock me-1"></i>{{ event.date_time|date:"M d, Y H:i" }}<br>
+                        {% if event.location %}
+                            <i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}
+                        {% endif %}
+                    </small>
+                </p>
+                {% if event.is_upcoming %}
+                    <span class="badge bg-success">Upcoming</span>
+                {% else %}
+                    <span class="badge bg-secondary">Past</span>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{% url 'events:detail' event.pk %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-eye me-1"></i>View Details
+                </a>
+                {% if user.user_type == 'organization' and event.organization.user == user %}
+                    <a href="{% url 'events:analytics' event.pk %}" class="btn btn-info btn-sm">
+                        <i class="fas fa-chart-bar me-1"></i>Analytics
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="fas fa-info-circle me-2"></i>No events found.
+            {% if user.user_type == 'organization' %}
+                <a href="{% url 'events:create' %}">Create your first event</a>.
+            {% else %}
+                <a href="{% url 'organizations:list' %}">Subscribe to organizations</a> to see their events.
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}&filter={{ filter_type }}">Previous</a>
+            </li>
+        {% endif %}
+        
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}&filter={{ filter_type }}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}&filter={{ filter_type }}">Next</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Respond to {{ event.title }} - Event Coordinator{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i class="fas fa-reply me-2"></i>
+                    Respond to Event
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h5>{{ event.title }}</h5>
+                    <p class="text-muted">
+                        <i class="fas fa-clock me-1"></i>{{ event.date_time|date:"l, F d, Y H:i" }}<br>
+                        {% if event.location %}
+                            <i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}
+                        {% endif %}
+                    </p>
+                </div>
+                
+                <form method="post" id="responseForm">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label fw-bold">Will you attend this event?</label>
+                        </div>
+                        
+                        <div class="col-4">
+                            <div class="card response-card text-center {% if response.response == 'yes' %}selected{% endif %}" data-value="yes">
+                                <div class="card-body">
+                                    <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                                    <h6>Yes</h6>
+                                    <small>I will attend</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-4">
+                            <div class="card response-card text-center {% if response.response == 'maybe' %}selected{% endif %}" data-value="maybe">
+                                <div class="card-body">
+                                    <i class="fas fa-question-circle fa-2x text-warning mb-2"></i>
+                                    <h6>Maybe</h6>
+                                    <small>I might attend</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-4">
+                            <div class="card response-card text-center {% if response.response == 'no' %}selected{% endif %}" data-value="no">
+                                <div class="card-body">
+                                    <i class="fas fa-times-circle fa-2x text-danger mb-2"></i>
+                                    <h6>No</h6>
+                                    <small>I cannot attend</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="response" id="responseInput" value="{{ response.response }}">
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-2"></i>Save Response
+                        </button>
+                        <a href="{% url 'events:detail' event.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Event
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const responseCards = document.querySelectorAll('.response-card');
+    const responseInput = document.getElementById('responseInput');
+    
+    responseCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove selected class from all cards
+            responseCards.forEach(c => c.classList.remove('selected'));
+            
+            // Add selected class to clicked card
+            this.classList.add('selected');
+            
+            // Update hidden input value
+            responseInput.value = this.dataset.value;
+        });
+    });
+});
+</script>
+{% endblock %}

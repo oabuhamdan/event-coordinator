@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile - Event Coordinator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-user me-2"></i>User Profile</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Username:</strong> {{ user.username }}</p>
+                        <p><strong>Email:</strong> {{ user.email }}</p>
+                        <p><strong>User Type:</strong> {{ user.get_user_type_display }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Phone Number:</strong> {{ user.phone_number|default:"Not provided" }}</p>
+                        <p><strong>WhatsApp Number:</strong> {{ user.whatsapp_number|default:"Not provided" }}</p>
+                        <p><strong>Member Since:</strong> {{ user.date_joined|date:"M d, Y" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                {% if user.user_type == 'organization' %}
+                    <a href="{% url 'organizations:dashboard' %}" class="btn btn-primary btn-block mb-2">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                    <a href="{% url 'events:create' %}" class="btn btn-success btn-block mb-2">
+                        <i class="fas fa-plus me-2"></i>Create Event
+                    </a>
+                {% else %}
+                    <a href="{% url 'organizations:list' %}" class="btn btn-primary btn-block mb-2">
+                        <i class="fas fa-search me-2"></i>Browse Organizations
+                    </a>
+                    <a href="{% url 'events:list' %}" class="btn btn-info btn-block mb-2">
+                        <i class="fas fa-calendar me-2"></i>My Events
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

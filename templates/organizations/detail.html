@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ organization.name }} - Event Coordinator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    {% if organization.logo %}
+                    <div class="col-md-3">
+                        <img src="{{ organization.logo.url }}" class="img-fluid rounded" alt="{{ organization.name }}">
+                    </div>
+                    <div class="col-md-9">
+                    {% else %}
+                    <div class="col-12">
+                    {% endif %}
+                        <h1>{{ organization.name }}</h1>
+                        <p class="lead">{{ organization.description }}</p>
+                        
+                        {% if organization.website %}
+                            <p>
+                                <i class="fas fa-globe me-2"></i>
+                                <a href="{{ organization.website }}" target="_blank">{{ organization.website }}</a>
+                            </p>
+                        {% endif %}
+                        
+                        <p class="text-muted">
+                            <i class="fas fa-bell me-2"></i>
+                            Notifications via {{ organization.get_notification_type_display }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if upcoming_events %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Upcoming Events</h5>
+            </div>
+            <div class="card-body">
+                {% for event in upcoming_events %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ event.title }}</h6>
+                        <p class="card-text">{{ event.description|truncatechars:100 }}</p>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i>{{ event.date_time|date:"M d, Y H:i" }}
+                                {% if event.location %}
+                                    <i class="fas fa-map-marker-alt ms-3 me-1"></i>{{ event.location }}
+                                {% endif %}
+                            </small>
+                        </p>
+                        <a href="{% url 'events:detail' event.pk %}" class="btn btn-sm btn-primary">View Event</a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Show organization tools if user is the org admin -->
+        {% if user.is_authenticated and user.user_type == 'organization' and organization.user == user %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Organization Management</h5>
+            </div>
+            <div class="card-body">
+                <a href="{% url 'organizations:availability_analytics' %}" class="btn btn-primary btn-block mb-2">
+                    <i class="fas fa-chart-line me-2"></i>Availability Analytics
+                </a>
+                <a href="{% url 'organizations:dashboard' %}" class="btn btn-info btn-block mb-2">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                </a>
+                <a href="{% url 'events:create' %}" class="btn btn-success btn-block mb-2">
+                    <i class="fas fa-plus me-2"></i>Create Event
+                </a>
+                <a href="{% url 'organizations:subscribers' %}" class="btn btn-secondary btn-block mb-2">
+                    <i class="fas fa-users me-2"></i>View Subscribers
+                </a>
+                <a href="{% url 'organizations:edit_profile' %}" class="btn btn-warning btn-block">
+                    <i class="fas fa-edit me-2"></i>Edit Profile
+                </a>
+            </div>
+        </div>
+        
+        <!-- Show subscription info for regular users or anonymous -->
+        {% else %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Subscribe to This Organization</h5>
+            </div>
+            <div class="card-body">
+                {% if user.is_authenticated and user.user_type == 'user' %}
+                    {% if is_subscribed %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>You are subscribed to this organization.
+                        </div>
+                        <a href="{% url 'events:set_availability' organization.pk %}" class="btn btn-info btn-block mb-2">
+                            <i class="fas fa-calendar-check me-2"></i>Set Availability
+                        </a>
+                        <a href="{% url 'organizations:unsubscribe' organization.pk %}" class="btn btn-outline-danger btn-block">
+                            <i class="fas fa-times me-2"></i>Unsubscribe
+                        </a>
+                    {% else %}
+                        <a href="{% url 'organizations:subscribe' organization.pk %}" class="btn btn-success btn-block mb-3">
+                            <i class="fas fa-bell me-2"></i>Subscribe (Registered User)
+                        </a>
+                    {% endif %}
+                {% else %}
+                    <!-- Anonymous subscription option -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        You can subscribe without creating an account!
+                    </div>
+                    
+                    <a href="{% url 'organizations:anonymous_subscribe' organization.pk %}" class="btn btn-primary btn-block mb-3">
+                        <i class="fas fa-bell me-2"></i>Subscribe Anonymously
+                    </a>
+                    
+                    <hr>
+                    
+                    <p class="small text-muted text-center">
+                        Already have an account? <a href="{% url 'accounts:login' %}">Login here</a><br>
+                        <a href="{% url 'accounts:register_user' %}">Create an account</a> for more features
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

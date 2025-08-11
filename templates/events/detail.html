@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ event.title }} - Event Coordinator{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h1>{{ event.title }}</h1>
+                <p class="lead">{{ event.description }}</p>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-calendar me-2"></i>Date & Time:</strong><br>
+                        {{ event.date_time|date:"l, F d, Y" }}<br>
+                        {{ event.date_time|time:"H:i" }} - {{ event.end_time|time:"H:i" }}</p>
+                        
+                        {% if event.location %}
+                        <p><strong><i class="fas fa-map-marker-alt me-2"></i>Location:</strong><br>
+                        {{ event.location }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong><i class="fas fa-building me-2"></i>Organization:</strong><br>
+                        <a href="{% url 'organizations:detail' event.organization.pk %}">{{ event.organization.name }}</a></p>
+                        
+                        {% if event.max_participants %}
+                        <p><strong><i class="fas fa-users me-2"></i>Max Participants:</strong><br>
+                        {{ event.max_participants }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Response Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h3 class="text-success">{{ response_counts.yes }}</h3>
+                            <p class="mb-0">Yes</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h3 class="text-warning">{{ response_counts.maybe }}</h3>
+                            <p class="mb-0">Maybe</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="text-center">
+                            <h3 class="text-danger">{{ response_counts.no }}</h3>
+                            <p class="mb-0">No</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Your Response</h5>
+            </div>
+            <div class="card-body">
+                {% if can_respond %}
+                    {% if user_response %}
+                        <div class="alert alert-info">
+                            <strong>Your current response:</strong><br>
+                            {{ user_response.get_response_display }}
+                        </div>
+                        <a href="{% url 'events:respond' event.pk %}" class="btn btn-primary btn-block">
+                            <i class="fas fa-edit me-2"></i>Change Response
+                        </a>
+                    {% else %}
+                        <a href="{% url 'events:respond' event.pk %}" class="btn btn-success btn-block">
+                            <i class="fas fa-reply me-2"></i>Respond to Event
+                        </a>
+                    {% endif %}
+                {% elif user.is_authenticated and user.user_type == 'organization' and event.organization.user == user %}
+                    <a href="{% url 'events:edit' event.pk %}" class="btn btn-warning btn-block mb-2">
+                        <i class="fas fa-edit me-2"></i>Edit Event
+                    </a>
+                    <a href="{% url 'events:analytics' event.pk %}" class="btn btn-info btn-block mb-2">
+                        <i class="fas fa-chart-bar me-2"></i>View Analytics
+                    </a>
+                    <a href="{% url 'events:delete' event.pk %}" class="btn btn-danger btn-block">
+                        <i class="fas fa-trash me-2"></i>Delete Event
+                    </a>
+                {% else %}
+                    <div class="alert alert-warning">
+                        You need to be subscribed to this organization to respond to events.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
