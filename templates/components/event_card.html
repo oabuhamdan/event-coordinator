@@ -1,0 +1,78 @@
+<div class="card h-100 event-card" data-event-id="{{ event.id }}">
+    <div class="card-header bg-transparent border-0">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                {% load event_tags %}
+                <small class="text-muted">
+                    <i class="fas fa-building me-1"></i>{{ event.organization.name }}
+                </small>
+            </div>
+            <div>
+                {% event_status_icon event as status_icon %}
+                {% event_status_class event as status_class %}
+                <i class="{{ status_icon }} {{ status_class }}"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <h5 class="card-title">{{ event.title }}</h5>
+        <p class="card-text">{{ event.description|truncatechars:100 }}</p>
+
+        <div class="event-details">
+            <div class="mb-2">
+                <i class="fas fa-calendar me-2 text-primary"></i>
+                <span>{{ event.date_time|date:"M d, Y" }}</span>
+            </div>
+            <div class="mb-2">
+                <i class="fas fa-clock me-2 text-primary"></i>
+                <span>{{ event.date_time|time:"H:i" }} ({{ event.duration_hours }}h)</span>
+            </div>
+            {% if event.location %}
+            <div class="mb-2">
+                <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                <span>{{ event.location }}</span>
+            </div>
+            {% endif %}
+            {% if event.max_participants %}
+            <div class="mb-2">
+                <i class="fas fa-users me-2 text-primary"></i>
+                <span>Max {{ event.max_participants }} participants</span>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if show_actions %}
+    <div class="card-footer bg-transparent border-0">
+        <div class="d-flex gap-2">
+            <a href="{% url 'events:detail' pk=event.id %}" class="btn btn-outline-primary btn-sm flex-fill">
+                <i class="fas fa-eye me-1"></i>View
+            </a>
+            {% if can_manage %}
+                <a href="{% url 'events:edit' pk=event.id %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <button class="btn btn-outline-danger btn-sm" onclick="confirmDelete({{ event.id }})">
+                    <i class="fas fa-trash"></i>
+                </button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.event-card {
+    transition: all 0.3s ease;
+}
+
+.event-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.event-details small {
+    font-size: 0.875rem;
+}
+</style>

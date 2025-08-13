@@ -2,48 +2,81 @@
 
 {% block title %}Delete {{ event.title }} - Event Coordinator{% endblock %}
 
+{% block extra_css %}
+<style>
+.delete-container {
+    background: linear-gradient(135deg, #fff5f5 0%, #fed7d7 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    border: 2px solid #fc8181;
+}
+
+.event-preview {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card border-danger">
-            <div class="card-header bg-danger text-white">
-                <h4 class="mb-0">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Event
-                </h4>
+    <div class="col-lg-6">
+        <div class="delete-container">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <i class="fas fa-exclamation-triangle fa-4x text-danger mb-3"></i>
+                <h2 class="fw-bold text-danger">Delete Event</h2>
+                <p class="text-danger">This action cannot be undone!</p>
             </div>
-            <div class="card-body">
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    <strong>Warning!</strong> This action cannot be undone.
+
+            <!-- Event Preview -->
+            <div class="event-preview">
+                <h5 class="fw-bold mb-3">{{ event.title }}</h5>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <p><i class="fas fa-calendar me-2"></i><strong>Date:</strong><br>{{ event.date_time|date:"F j, Y" }}</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p><i class="fas fa-clock me-2"></i><strong>Time:</strong><br>{{ event.date_time|time:"g:i A" }}</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <p><i class="fas fa-building me-2"></i><strong>Organization:</strong><br>{{ event.organization.name }}</p>
+                    </div>
+                    {% if event.location %}
+                    <div class="col-sm-6">
+                        <p><i class="fas fa-map-marker-alt me-2"></i><strong>Location:</strong><br>{{ event.location }}</p>
+                    </div>
+                    {% endif %}
                 </div>
-                
-                <p>Are you sure you want to delete the following event?</p>
-                
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ event.title }}</h5>
-                        <p class="card-text">{{ event.description|truncatechars:100 }}</p>
-                        <p class="card-text">
-                            <small class="text-muted">
-                                <i class="fas fa-calendar me-1"></i>{{ event.date_time|date:"M d, Y H:i" }}<br>
-                                {% if event.location %}
-                                    <i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}
-                                {% endif %}
-                            </small>
-                        </p>
+                {% if event.description %}
+                <p><i class="fas fa-info-circle me-2"></i><strong>Description:</strong><br>{{ event.description|truncatechars:150 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Warning -->
+            <div class="alert alert-danger border-0 mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle fa-2x me-3"></i>
+                    <div>
+                        <h6 class="alert-heading mb-1">Are you absolutely sure?</h6>
+                        <p class="mb-0">This will permanently delete the event and all associated responses. This action cannot be undone.</p>
                     </div>
                 </div>
-                
-                <form method="post" class="mt-4">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">
-                        <i class="fas fa-trash me-2"></i>Yes, Delete Event
-                    </button>
-                    <a href="{% url 'events:detail' event.pk %}" class="btn btn-secondary">
-                        <i class="fas fa-times me-2"></i>Cancel
-                    </a>
-                </form>
             </div>
+
+            <!-- Action Buttons -->
+            <form method="post" class="text-center">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-lg me-3" onclick="showLoading()">
+                    <i class="fas fa-trash me-2"></i>Yes, Delete Event
+                </button>
+                <a href="{% url 'events:detail' event.pk %}" class="btn btn-secondary btn-lg">
+                    <i class="fas fa-arrow-left me-2"></i>Cancel
+                </a>
+            </form>
         </div>
     </div>
 </div>

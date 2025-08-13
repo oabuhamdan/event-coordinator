@@ -3,8 +3,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+
 from .models import Event, EventResponse
-from organizations.models import Subscription
+from .services import EventService
+from .utils import is_regular_user
 
 class EventResponseAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -12,8 +14,8 @@ class EventResponseAPIView(APIView):
     def post(self, request, event_id):
         event = get_object_or_404(Event, id=event_id)
         
-        # Check if user is subscribed
-        if not Subscription.objects.filter(user=request.user, organization=event.organization).exists():
+        # Use service layer for validation
+        if not EventService.can_user_respond(request.user, event):
             return Response(
                 {'error': 'You must be subscribed to this organization to respond to events.'},
                 status=status.HTTP_403_FORBIDDEN
@@ -32,8 +34,12 @@ class EventResponseAPIView(APIView):
             defaults={'response': response_value}
         )
         
+        # Get updated response counts using service
+        response_counts = EventService.get_response_counts(event)
+
         return Response({
             'message': 'Response recorded successfully',
             'response': response_obj.response,
-            'created': created
+            'created': created,
+            'response_counts': response_counts
         }, status=status.HTTP_200_OK)

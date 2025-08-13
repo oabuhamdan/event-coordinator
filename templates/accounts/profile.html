@@ -1,53 +1,80 @@
 {% extends 'base.html' %}
+{% load crispy_forms_tags %}
 
-{% block title %}Profile - Event Coordinator{% endblock %}
+{% block title %}Profile{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-8">
         <div class="card">
             <div class="card-header">
-                <h4 class="mb-0"><i class="fas fa-user me-2"></i>User Profile</h4>
+                <h4><i class="fas fa-user me-2"></i>My Profile</h4>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6">
-                        <p><strong>Username:</strong> {{ user.username }}</p>
-                        <p><strong>Email:</strong> {{ user.email }}</p>
-                        <p><strong>User Type:</strong> {{ user.get_user_type_display }}</p>
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username</label>
+                                <input type="text" class="form-control" id="username" value="{{ user.username }}" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="user_type" class="form-label">Account Type</label>
+                                <input type="text" class="form-control" id="user_type" value="{{ user.get_user_type_display }}" readonly>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-6">
-                        <p><strong>Phone Number:</strong> {{ user.phone_number|default:"Not provided" }}</p>
-                        <p><strong>WhatsApp Number:</strong> {{ user.whatsapp_number|default:"Not provided" }}</p>
-                        <p><strong>Member Since:</strong> {{ user.date_joined|date:"M d, Y" }}</p>
+
+                    {{ profile_form|crispy }}
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Update Profile
+                        </button>
                     </div>
-                </div>
+                </form>
             </div>
         </div>
     </div>
+
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Quick Actions</h5>
+                <h5><i class="fas fa-key me-2"></i>Change Password</h5>
             </div>
             <div class="card-body">
-                {% if user.user_type == 'organization' %}
-                    <a href="{% url 'organizations:dashboard' %}" class="btn btn-primary btn-block mb-2">
-                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                    </a>
-                    <a href="{% url 'events:create' %}" class="btn btn-success btn-block mb-2">
-                        <i class="fas fa-plus me-2"></i>Create Event
-                    </a>
-                {% else %}
-                    <a href="{% url 'organizations:list' %}" class="btn btn-primary btn-block mb-2">
-                        <i class="fas fa-search me-2"></i>Browse Organizations
-                    </a>
-                    <a href="{% url 'events:list' %}" class="btn btn-info btn-block mb-2">
-                        <i class="fas fa-calendar me-2"></i>My Events
-                    </a>
-                {% endif %}
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="change_password" value="1">
+
+                    {{ password_form|crispy }}
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-key me-2"></i>Change Password
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
+
+        {% if user.is_regular_user %}
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="fas fa-bell me-2"></i>My Subscriptions</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Manage your organization subscriptions and availability.</p>
+                <a href="{% url 'organizations:list' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-building me-2"></i>Browse Organizations
+                </a>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

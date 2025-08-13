@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }} - Event Coordinator{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-{% if user_type == 'organization' %}building{% else %}user{% endif %} me-2"></i>
+                    {{ title }}
+                </h4>
+            </div>
+            <div class="card-body">
+                {% if user_type == 'organization' %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        As an organization, you'll be able to create events and manage subscribers.
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-{% if user_type == 'organization' %}building{% else %}user-plus{% endif %} me-2"></i>
+                            Create Account
+                        </button>
+                    </div>
+                </form>
+
+                <hr class="my-4">
+
+                <div class="text-center">
+                    <p class="text-muted">Already have an account?</p>
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                </div>
+
+                <div class="text-center mt-3">
+                    <p class="text-muted">Want to register as {% if user_type == 'organization' %}user{% else %}organization{% endif %}?</p>
+                    <a href="{% url 'accounts:register_{% if user_type == 'organization' %}user{% else %}organization{% endif %}' %}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-{% if user_type == 'organization' %}user{% else %}building{% endif %} me-2"></i>
+                        Register as {% if user_type == 'organization' %}User{% else %}Organization{% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -3,197 +3,160 @@
 {% block title %}Availability Analytics - {{ organization.name }}{% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h2><i class="fas fa-chart-line me-2"></i>Enhanced Availability Analytics</h2>
-        <p class="text-muted">{{ organization.name }} - Interactive insights into subscriber availability patterns</p>
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-chart-line me-2"></i>Availability Analytics</h2>
+            <p class="text-muted">{{ organization.name }} - Subscriber availability insights</p>
+        </div>
     </div>
-</div>
 
-<!-- Date Filter -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-calendar-alt me-2"></i>Date Range Filter</h5>
-            </div>
-            <div class="card-body">
-                <form method="get" class="row g-3" id="dateFilterForm">
-                    <div class="col-md-4">
-                        <label for="start_date" class="form-label">Start Date</label>
-                        <input type="date" class="form-control" id="start_date" name="start_date" 
-                               value="{{ start_date|date:'Y-m-d' }}">
+    <!-- Date Filter -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-calendar-alt me-2"></i>Date Range Filter</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3" id="dateFilterForm">
+                        <div class="col-md-4">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date"
+                                   value="{{ start_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date"
+                                   value="{{ end_date|date:'Y-m-d' }}">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-1"></i>Apply Filter
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="setQuickRange('30')">Next
+                                30 Days
+                            </button>
+                            <button type="button" class="btn btn-outline-info" onclick="setQuickRange('7')">Next Week
+                            </button>
+                        </div>
+                    </form>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Currently showing: <strong>{{ analytics.date_range }}</strong>
+                            ({{ analytics.days_in_range }} days)
+                        </small>
                     </div>
-                    <div class="col-md-4">
-                        <label for="end_date" class="form-label">End Date</label>
-                        <input type="date" class="form-control" id="end_date" name="end_date" 
-                               value="{{ end_date|date:'Y-m-d' }}">
-                    </div>
-                    <div class="col-md-4 d-flex align-items-end gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-filter me-1"></i>Apply Filter
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary" onclick="setQuickRange('30')">Next 30 Days</button>
-                        <button type="button" class="btn btn-outline-info" onclick="setQuickRange('7')">Next Week</button>
-                    </div>
-                </form>
-                <div class="mt-2">
-                    <small class="text-muted">
-                        <i class="fas fa-info-circle me-1"></i>
-                        Currently showing: <strong>{{ analytics.date_range }}</strong> 
-                        ({{ analytics.days_in_range }} days)
-                    </small>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Summary Cards -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card bg-primary text-white">
-            <div class="card-body text-center">
-                <h3>{{ analytics.total_subscribers }}</h3>
-                <p class="mb-0">Total Subscribers</p>
-                <small>{{ total_regular_subscribers }} Registered + {{ total_anonymous_subscribers }} Anonymous</small>
+    <!-- Summary Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body text-center">
+                    <h3>{{ analytics.total_subscribers }}</h3>
+                    <p class="mb-0">Total Subscribers</p>
+                    <small>{{ total_regular_subscribers }} Registered + {{ total_anonymous_subscribers }}
+                        Anonymous</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body text-center">
+                    <h3>{{ analytics.top_datetime_slots|length }}</h3>
+                    <p class="mb-0">Top Date-Time Slots</p>
+                    <small>Click any slot for details</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body text-center">
+                    <h3>{{ analytics.days_in_range }}</h3>
+                    <p class="mb-0">Days in Range</p>
+                    <small>{{ start_date|date:"M d" }} - {{ end_date|date:"M d, Y" }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body text-center">
+                    <h3>{{ analytics.datetime_slot_details|length }}</h3>
+                    <p class="mb-0">Available Time Slots</p>
+                    <small>Specific date-time combinations</small>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card bg-success text-white">
-            <div class="card-body text-center">
-                <h3>{{ analytics.top_datetime_slots|length }}</h3>
-                <p class="mb-0">Top Date-Time Slots</p>
-                <small>Click any slot for details</small>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-info text-white">
-            <div class="card-body text-center">
-                <h3>{{ analytics.days_in_range }}</h3>
-                <p class="mb-0">Days in Range</p>
-                <small>{{ start_date|date:"M d" }} - {{ end_date|date:"M d, Y" }}</small>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card bg-warning text-white">
-            <div class="card-body text-center">
-                <h3>{{ analytics.datetime_slot_details|length }}</h3>
-                <p class="mb-0">Unique DateTime Slots</p>
-                <small>Specific date-time combinations</small>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Top 6 DateTime Slots (Date + Time) -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-trophy me-2"></i>Top 6 Best Date-Time Slots</h5>
-                <small class="text-muted">Specific dates and times when most subscribers are available. Click any slot for detailed breakdown.</small>
-            </div>
-            <div class="card-body">
-                {% if analytics.top_datetime_slots %}
-                    <div class="row">
-                        {% for datetime_slot, data in analytics.top_datetime_slots %}
-                        <div class="col-md-6 col-xl-4 mb-3">
-                            <div class="card border-primary datetime-slot-card" 
-                                 onclick="showDateTimeSlotDetails('{{ datetime_slot }}')" 
-                                 style="cursor: pointer;">
-                                <div class="card-body text-center p-3">
-                                    <h6 class="text-primary mb-2">{{ data.day_name }}</h6>
-                                    <h5 class="text-dark mb-1">{{ data.formatted_date }}</h5>
-                                    <h4 class="text-primary mb-3">{{ data.time }}</h4>
-                                    
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <span class="badge bg-success fs-6">{{ data.sure_count }}</span>
-                                            <br><small>Sure</small>
+    <!-- Top 6 DateTime Slots -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-trophy me-2"></i>Top Available Date-Time Slots</h5>
+                    <small class="text-muted">Specific dates and times when most subscribers are available. Click any
+                        slot for detailed breakdown.</small>
+                </div>
+                <div class="card-body">
+                    {% if analytics.top_datetime_slots %}
+                        <div class="row">
+                            {% for datetime_slot, data in analytics.top_datetime_slots %}
+                                <div class="col-md-6 col-xl-4 mb-3">
+                                    <div class="card border-primary datetime-slot-card"
+                                         onclick="showDateTimeSlotDetails('{{ datetime_slot }}')"
+                                         style="cursor: pointer;">
+                                        <div class="card-body text-center p-3">
+                                            <h6 class="text-primary mb-2">{{ data.day_name }}</h6>
+                                            <h5 class="text-dark mb-1">{{ data.formatted_date }}</h5>
+                                            <h4 class="text-primary mb-3">{{ data.time }}</h4>
+
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <span class="badge bg-success fs-6">{{ data.sure_count }}</span>
+                                                    <br><small>Sure</small>
+                                                </div>
+                                                <div class="col-6">
+                                                    <span class="badge bg-warning fs-6">{{ data.maybe_count }}</span>
+                                                    <br><small>Maybe</small>
+                                                </div>
+                                            </div>
+
+                                            <div class="mt-2">
+                                                <strong class="text-success">{{ data.total_count }} subscribers</strong>
+                                            </div>
                                         </div>
-                                        <div class="col-6">
-                                            <span class="badge bg-warning fs-6">{{ data.maybe_count }}</span>
-                                            <br><small>Maybe</small>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="mt-2">
-                                        <strong class="text-success">Score: {{ data.score }}</strong><br>
-                                        <small class="text-muted">{{ data.total_count }} subscribers available</small>
                                     </div>
                                 </div>
-                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="alert alert-info text-center">
-                        <i class="fas fa-info-circle me-2"></i>
-                        No availability data for the selected date range.
-                    </div>
-                {% endif %}
+                    {% else %}
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-info-circle me-2"></i>
+                            No availability data for the selected date range.
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Top Time Slots (Aggregated by Time Only) -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-clock me-2"></i>Most Popular Time Slots (Aggregated)</h5>
-                <small class="text-muted">Time slots with highest availability across all dates in the range</small>
-            </div>
-            <div class="card-body">
-                {% if analytics.top_time_slots %}
-                    <div class="row">
-                        {% for time_slot, data in analytics.top_time_slots %}
-                        <div class="col-md-6 col-lg-4 mb-3">
-                            <div class="card border-info">
-                                <div class="card-body text-center p-3">
-                                    <h4 class="text-info">{{ time_slot }}</h4>
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <span class="badge bg-success fs-6">{{ data.sure_count }}</span>
-                                            <br><small>Sure</small>
-                                        </div>
-                                        <div class="col-6">
-                                            <span class="badge bg-warning fs-6">{{ data.maybe_count }}</span>
-                                            <br><small>Maybe</small>
-                                        </div>
-                                    </div>
-                                    <div class="mt-2">
-                                        <strong class="text-success">Total: {{ data.total_count }}</strong><br>
-                                        <small class="text-muted">Across all dates</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Weekly Pattern with Dropdowns -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-calendar-week me-2"></i>Weekly Availability Patterns</h5>
-                <small class="text-muted">Click on any day to see detailed subscriber times</small>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
+    <!-- Weekly Pattern with Improved Cards -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-calendar-week me-2"></i>Weekly Availability Patterns</h5>
+                    <small class="text-muted">Click on any day to see detailed subscriber information</small>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
                             <tr>
                                 <th>Day of Week</th>
                                 <th class="text-center">Subscribers</th>
@@ -201,218 +164,128 @@
                                 <th class="text-center">Maybe</th>
                                 <th class="text-center">Details</th>
                             </tr>
-                        </thead>
-                        <tbody>
+                            </thead>
+                            <tbody>
                             {% for day, data in analytics.weekly_summary.items %}
-                            <tr>
-                                <td><strong>{{ day }}</strong></td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary">{{ data.subscriber_count }}</span>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-success">{{ data.sure_count }}</span>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-warning">{{ data.maybe_count }}</span>
-                                </td>
-                                <td class="text-center">
-                                    {% if data.subscriber_count > 0 %}
-                                        <button class="btn btn-sm btn-outline-primary" 
-                                                onclick="toggleWeeklyDetails('{{ day|lower }}')">
-                                            <i class="fas fa-eye"></i> View Details
-                                        </button>
-                                    {% else %}
-                                        <span class="text-muted">No data</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                            {% if data.subscriber_count > 0 %}
-                            <tr id="weekly-details-{{ day|lower }}" class="weekly-details" style="display: none;">
-                                <td colspan="5">
-                                    <div class="p-3 bg-light">
-                                        <h6>{{ day }} Subscribers:</h6>
-                                        <div class="row">
-                                            {% for subscriber in data.subscribers %}
-                                            <div class="col-md-6 mb-2">
-                                                <div class="card card-sm">
-                                                    <div class="card-body p-2">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <div>
-                                                                <strong>{{ subscriber.name }}</strong>
-                                                                {% if subscriber.type == 'anonymous' %}
-                                                                    <span class="badge bg-info ms-1">Anon</span>
-                                                                {% endif %}
-                                                                <br>
-                                                                <small class="text-muted">
-                                                                    {% if subscriber.time_slots %}
-                                                                        {% for slot in subscriber.time_slots %}{{ slot }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                                                                    {% else %}
-                                                                        {{ subscriber.time_slot }}
-                                                                    {% endif %}
-                                                                </small>
-                                                            </div>
-                                                            <div>
-                                                                {% if subscriber.availability_type == 'sure' %}
-                                                                    <span class="badge bg-success">Sure</span>
-                                                                {% else %}
-                                                                    <span class="badge bg-warning">Maybe</span>
-                                                                {% endif %}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endif %}
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Monthly Pattern with Dropdowns -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-calendar-day me-2"></i>Monthly Availability Patterns</h5>
-                <small class="text-muted">Click on any day to see detailed subscriber times</small>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive" style="max-height: 400px;">
-                    <table class="table table-hover table-sm">
-                        <thead class="sticky-top bg-white">
-                            <tr>
-                                <th>Day of Month</th>
-                                <th class="text-center">Subscribers</th>
-                                <th class="text-center">Sure</th>
-                                <th class="text-center">Maybe</th>
-                                <th class="text-center">Details</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for day, data in analytics.monthly_summary.items %}
-                            {% if data.subscriber_count > 0 %}
-                            <tr>
-                                <td><strong>{{ day }}{{ day|add:"0"|slice:":-1" }}{% if day == 1 or day == 21 or day == 31 %}st{% elif day == 2 or day == 22 %}nd{% elif day == 3 or day == 23 %}rd{% else %}th{% endif %}</strong></td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary">{{ data.subscriber_count }}</span>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-success">{{ data.sure_count }}</span>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-warning">{{ data.maybe_count }}</span>
-                                </td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-primary" 
-                                            onclick="toggleMonthlyDetails('{{ day }}')">
-                                        <i class="fas fa-eye"></i> View
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr id="monthly-details-{{ day }}" class="monthly-details" style="display: none;">
-                                <td colspan="5">
-                                    <div class="p-3 bg-light">
-                                        <h6>Day {{ day }} Subscribers:</h6>
-                                        <div class="row">
-                                            {% for subscriber in data.subscribers %}
-                                            <div class="col-md-6 mb-2">
-                                                <div class="card card-sm">
-                                                    <div class="card-body p-2">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <div>
-                                                                <strong>{{ subscriber.name }}</strong>
-                                                                {% if subscriber.type == 'anonymous' %}
-                                                                    <span class="badge bg-info ms-1">Anon</span>
-                                                                {% endif %}
-                                                                <br>
-                                                                <small class="text-muted">
-                                                                    {% if subscriber.time_slots %}
-                                                                        {% for slot in subscriber.time_slots %}{{ slot }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                                                                    {% else %}
-                                                                        {{ subscriber.time_slot }}
-                                                                    {% endif %}
-                                                                </small>
-                                                            </div>
-                                                            <div>
-                                                                {% if subscriber.availability_type == 'sure' %}
-                                                                    <span class="badge bg-success">Sure</span>
-                                                                {% else %}
-                                                                    <span class="badge bg-warning">Maybe</span>
-                                                                {% endif %}
+                                <tr>
+                                    <td><strong>{{ day }}</strong></td>
+                                    <td class="text-center">
+                                        <span class="badge bg-primary">{{ data.subscriber_count }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-success">{{ data.sure_count }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-warning">{{ data.maybe_count }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        {% if data.subscriber_count > 0 %}
+                                            <button class="btn btn-sm btn-outline-primary"
+                                                    onclick="toggleWeeklyDetails('{{ day|lower }}')">
+                                                <i class="fas fa-eye"></i> View Details
+                                            </button>
+                                        {% else %}
+                                            <span class="text-muted">No data</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% if data.subscriber_count > 0 %}
+                                    <tr id="weekly-details-{{ day|lower }}" class="weekly-details"
+                                        style="display: none;">
+                                        <td colspan="5">
+                                            <div class="p-3 bg-light">
+                                                <h6>{{ day }} Subscribers:</h6>
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    {% for subscriber in data.subscribers %}
+                                                        <div class="card border-light"
+                                                             style="min-width: 200px; max-width: 250px;">
+                                                            <div class="card-body p-2">
+                                                                <div class="d-flex justify-content-between align-items-start">
+                                                                    <div class="flex-grow-1">
+                                                                        <strong class="small">{{ subscriber.name }}</strong>
+                                                                        {% if subscriber.type == 'anonymous' %}
+                                                                            <span class="badge bg-info ms-1"
+                                                                                  style="font-size: 0.7rem;">Anon</span>
+                                                                        {% endif %}
+                                                                        <div class="small text-muted mt-1">
+                                                                            {% if subscriber.time_slots %}
+                                                                                {% for slot in subscriber.time_slots %}
+                                                                                    {{ slot }}{% if not forloop.last %},
+                                                                                {% endif %}{% endfor %}
+                                                                            {% else %}
+                                                                                {{ subscriber.time_slot }}
+                                                                            {% endif %}
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="flex-shrink-0 ms-2">
+                                                                        {% if subscriber.availability_type == 'sure' %}
+                                                                            <span class="badge bg-success"
+                                                                                  style="font-size: 0.7rem;">Sure</span>
+                                                                        {% else %}
+                                                                            <span class="badge bg-warning"
+                                                                                  style="font-size: 0.7rem;">Maybe</span>
+                                                                        {% endif %}
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                         </div>
-                                                    </div>
+                                                    {% endfor %}
                                                 </div>
                                             </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endif %}
                             {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- DateTime Slot Details Modal -->
-<div class="modal fade" id="datetimeSlotModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Date-Time Slot Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="datetimeSlotModalBody">
-                <div class="text-center">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- DateTime Slot Details Modal -->
+    <div class="modal fade" id="datetimeSlotModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Date-Time Slot Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="datetimeSlotModalBody">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block scripts %}
-<script>
-function setQuickRange(days) {
-    const today = new Date();
-    const endDate = new Date(today);
-    endDate.setDate(today.getDate() + parseInt(days));
-    
-    document.getElementById('start_date').value = today.toISOString().split('T')[0];
-    document.getElementById('end_date').value = endDate.toISOString().split('T')[0];
-    
-    // Submit form
-    document.getElementById('dateFilterForm').submit();
-}
+    <script>
+        function setQuickRange(days) {
+            const today = new Date();
+            const endDate = new Date(today);
+            endDate.setDate(today.getDate() + parseInt(days));
 
-function showDateTimeSlotDetails(datetimeSlot) {
-    const modal = new bootstrap.Modal(document.getElementById('datetimeSlotModal'));
-    const modalBody = document.getElementById('datetimeSlotModalBody');
-    
-    // Parse datetime slot
-    const parts = datetimeSlot.split(' ');
-    const datePart = parts[0];
-    const timePart = parts[1];
-    
-    // Show loading spinner
-    modalBody.innerHTML = `
+            document.getElementById('start_date').value = today.toISOString().split('T')[0];
+            document.getElementById('end_date').value = endDate.toISOString().split('T')[0];
+
+            document.getElementById('dateFilterForm').submit();
+        }
+
+        function showDateTimeSlotDetails(datetimeSlot) {
+            const modal = new bootstrap.Modal(document.getElementById('datetimeSlotModal'));
+            const modalBody = document.getElementById('datetimeSlotModalBody');
+
+            const parts = datetimeSlot.split(' ');
+            const datePart = parts[0];
+            const timePart = parts[1];
+
+            modalBody.innerHTML = `
         <div class="text-center">
             <div class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -420,32 +293,29 @@ function showDateTimeSlotDetails(datetimeSlot) {
             <p class="mt-2">Loading details for ${datePart} at ${timePart}...</p>
         </div>
     `;
-    
-    modal.show();
-    
-    // Get current date filter values
-    const startDate = document.getElementById('start_date').value;
-    const endDate = document.getElementById('end_date').value;
-    
-    // Fetch subscriber details for this datetime slot
-    fetch(`/organizations/{{ organization.id }}/datetime-slot-details/?datetime_slot=${datetimeSlot}&start_date=${startDate}&end_date=${endDate}`)
-        .then(response => response.json())
-        .then(data => {
-            const parts = data.datetime_slot.split(' ');
-            const datePart = parts[0];
-            const timePart = parts[1];
-            
-            // Format date nicely
-            const dateObj = new Date(datePart);
-            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-            const dayName = dayNames[dateObj.getDay()];
-            const formattedDate = dateObj.toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-            });
-            
-            let html = `
+
+            modal.show();
+
+            const startDate = document.getElementById('start_date').value;
+            const endDate = document.getElementById('end_date').value;
+
+            fetch(`/organizations/{{ organization.id }}/datetime-slot-details/?datetime_slot=${datetimeSlot}&start_date=${startDate}&end_date=${endDate}`)
+                .then(response => response.json())
+                .then(data => {
+                    const parts = data.datetime_slot.split(' ');
+                    const datePart = parts[0];
+                    const timePart = parts[1];
+
+                    const dateObj = new Date(datePart);
+                    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    const dayName = dayNames[dateObj.getDay()];
+                    const formattedDate = dateObj.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+
+                    let html = `
                 <div class="text-center mb-4">
                     <h4 class="text-primary">
                         <i class="fas fa-calendar-day me-2"></i>${dayName}
@@ -456,193 +326,150 @@ function showDateTimeSlotDetails(datetimeSlot) {
                     </h4>
                 </div>
             `;
-            
-            // Sure subscribers
-            if (data.subscribers.sure && data.subscribers.sure.length > 0) {
-                html += `
+
+                    // Sure subscribers
+                    if (data.subscribers.sure && data.subscribers.sure.length > 0) {
+                        html += `
                     <div class="mb-4">
                         <h5 class="text-success">
                             <i class="fas fa-check-circle me-2"></i>
                             Sure Subscribers (${data.subscribers.sure.length})
                         </h5>
-                        <div class="row">
+                        <div class="d-flex flex-wrap gap-2">
                 `;
-                
-                data.subscribers.sure.forEach(subscriber => {
-                    html += `
-                        <div class="col-md-6 mb-2">
-                            <div class="card border-success">
-                                <div class="card-body p-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>${subscriber.name}</strong>
-                                            ${subscriber.type === 'anonymous' ? '<span class="badge bg-info ms-1">Anonymous</span>' : ''}
-                                            <br>
-                                            <small class="text-muted">
-                                                <i class="fas fa-envelope me-1"></i>${subscriber.email}
-                                            </small>
-                                            <br>
-                                            <small class="text-muted">
-                                                <i class="fas fa-calendar me-1"></i>${subscriber.recurrence_type}
-                                            </small>
-                                        </div>
-                                        <div>
-                                            <span class="badge bg-success">Sure</span>
-                                        </div>
+
+                        data.subscribers.sure.forEach(subscriber => {
+                            html += `
+                        <div class="card border-success" style="min-width: 200px; max-width: 250px;">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>${subscriber.name}</strong>
+                                        ${subscriber.type === 'anonymous' ? '<span class="badge bg-info ms-1">Anonymous</span>' : ''}
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="fas fa-envelope me-1"></i>${subscriber.email}
+                                        </small>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-success">Sure</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     `;
-                });
-                
-                html += '</div></div>';
-            }
-            
-            // Maybe subscribers
-            if (data.subscribers.maybe && data.subscribers.maybe.length > 0) {
-                html += `
+                        });
+
+                        html += '</div></div>';
+                    }
+
+                    // Maybe subscribers
+                    if (data.subscribers.maybe && data.subscribers.maybe.length > 0) {
+                        html += `
                     <div class="mb-4">
                         <h5 class="text-warning">
                             <i class="fas fa-question-circle me-2"></i>
                             Maybe Subscribers (${data.subscribers.maybe.length})
                         </h5>
-                        <div class="row">
+                        <div class="d-flex flex-wrap gap-2">
                 `;
-                
-                data.subscribers.maybe.forEach(subscriber => {
-                    html += `
-                        <div class="col-md-6 mb-2">
-                            <div class="card border-warning">
-                                <div class="card-body p-3">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>${subscriber.name}</strong>
-                                            ${subscriber.type === 'anonymous' ? '<span class="badge bg-info ms-1">Anonymous</span>' : ''}
-                                            <br>
-                                            <small class="text-muted">
-                                                <i class="fas fa-envelope me-1"></i>${subscriber.email}
-                                            </small>
-                                            <br>
-                                            <small class="text-muted">
-                                                <i class="fas fa-calendar me-1"></i>${subscriber.recurrence_type}
-                                            </small>
-                                        </div>
-                                        <div>
-                                            <span class="badge bg-warning">Maybe</span>
-                                        </div>
+
+                        data.subscribers.maybe.forEach(subscriber => {
+                            html += `
+                        <div class="card border-warning" style="min-width: 200px; max-width: 250px;">
+                            <div class="card-body p-3">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>${subscriber.name}</strong>
+                                        ${subscriber.type === 'anonymous' ? '<span class="badge bg-info ms-1">Anonymous</span>' : ''}
+                                        <br>
+                                        <small class="text-muted">
+                                            <i class="fas fa-envelope me-1"></i>${subscriber.email}
+                                        </small>
+                                    </div>
+                                    <div>
+                                        <span class="badge bg-warning">Maybe</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     `;
-                });
-                
-                html += '</div></div>';
-            }
-            
-            // No subscribers
-            if ((!data.subscribers.sure || data.subscribers.sure.length === 0) && 
-                (!data.subscribers.maybe || data.subscribers.maybe.length === 0)) {
-                html += `
+                        });
+
+                        html += '</div></div>';
+                    }
+
+                    if ((!data.subscribers.sure || data.subscribers.sure.length === 0) &&
+                        (!data.subscribers.maybe || data.subscribers.maybe.length === 0)) {
+                        html += `
                     <div class="alert alert-info text-center">
                         <i class="fas fa-info-circle me-2"></i>
                         No subscribers available for this specific date and time.
                     </div>
                 `;
-            }
-            
-            modalBody.innerHTML = html;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            modalBody.innerHTML = `
+                    }
+
+                    modalBody.innerHTML = html;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    modalBody.innerHTML = `
                 <div class="alert alert-danger">
                     <i class="fas fa-exclamation-triangle me-2"></i>
                     Error loading subscriber details. Please try again.
                 </div>
             `;
-        });
-}
-
-function toggleWeeklyDetails(day) {
-    const detailsRow = document.getElementById(`weekly-details-${day}`);
-    const allDetails = document.querySelectorAll('.weekly-details');
-    
-    // Hide all other details
-    allDetails.forEach(row => {
-        if (row.id !== `weekly-details-${day}`) {
-            row.style.display = 'none';
+                });
         }
-    });
-    
-    // Toggle current details
-    if (detailsRow.style.display === 'none') {
-        detailsRow.style.display = 'table-row';
-    } else {
-        detailsRow.style.display = 'none';
-    }
-}
 
-function toggleMonthlyDetails(day) {
-    const detailsRow = document.getElementById(`monthly-details-${day}`);
-    const allDetails = document.querySelectorAll('.monthly-details');
-    
-    // Hide all other details
-    allDetails.forEach(row => {
-        if (row.id !== `monthly-details-${day}`) {
-            row.style.display = 'none';
+        function toggleWeeklyDetails(day) {
+            const detailsRow = document.getElementById(`weekly-details-${day}`);
+            const allDetails = document.querySelectorAll('.weekly-details');
+
+            // Hide all other details
+            allDetails.forEach(row => {
+                if (row.id !== `weekly-details-${day}`) {
+                    row.style.display = 'none';
+                }
+            });
+
+            // Toggle current details
+            if (detailsRow.style.display === 'none') {
+                detailsRow.style.display = 'table-row';
+            } else {
+                detailsRow.style.display = 'none';
+            }
         }
-    });
-    
-    // Toggle current details
-    if (detailsRow.style.display === 'none') {
-        detailsRow.style.display = 'table-row';
-    } else {
-        detailsRow.style.display = 'none';
-    }
-}
 
-// Add hover effects to datetime slot cards
-document.addEventListener('DOMContentLoaded', function() {
-    const datetimeSlotCards = document.querySelectorAll('.datetime-slot-card');
-    datetimeSlotCards.forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+        // Add hover effects to datetime slot cards
+        document.addEventListener('DOMContentLoaded', function () {
+            const datetimeSlotCards = document.querySelectorAll('.datetime-slot-card');
+            datetimeSlotCards.forEach(card => {
+                card.addEventListener('mouseenter', function () {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+                });
+
+                card.addEventListener('mouseleave', function () {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '';
+                });
+            });
         });
-        
-        card.addEventListener('mouseleave', function() {
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = '';
-        });
-    });
-});
-</script>
+    </script>
 
-<style>
-.datetime-slot-card {
-    transition: all 0.3s ease;
-}
+    <style>
+        .datetime-slot-card {
+            transition: all 0.3s ease;
+        }
 
-.datetime-slot-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
+        .datetime-slot-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
-.card-sm .card-body {
-    padding: 0.5rem;
-}
-
-.weekly-details td,
-.monthly-details td {
-    border-top: none;
-}
-
-.sticky-top {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-</style>
+        .weekly-details td {
+            border-top: none;
+        }
+    </style>
 {% endblock %}

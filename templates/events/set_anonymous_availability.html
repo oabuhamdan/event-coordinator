@@ -3,207 +3,148 @@
 
 {% block title %}Set Availability - {{ organization.name }}{% endblock %}
 
+{% block extra_css %}
+<style>
+.availability-container {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 20px;
+    padding: 2rem;
+}
+
+.subscriber-info {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.org-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="mb-0">
-                    <i class="fas fa-calendar-check me-2"></i>
-                    Set Your Availability for {{ organization.name }}
-                </h4>
-                <small class="text-muted">Subscribed as: {{ anonymous_subscription.name }} ({{ anonymous_subscription.email }})</small>
+    <div class="col-lg-8">
+        <div class="availability-container">
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <i class="fas fa-clock fa-3x text-primary mb-3"></i>
+                <h2 class="fw-bold">Set Your Availability</h2>
+                <p class="text-muted">Configure when you're available for {{ organization.name }} events</p>
             </div>
-            <div class="card-body">
+
+            <!-- Subscriber Info -->
+            <div class="subscriber-info">
+                <h5 class="mb-3">
+                    <i class="fas fa-user me-2"></i>Subscriber Information
+                </h5>
                 <div class="row">
-                    <div class="col-md-8">
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle me-2"></i>
-                            Set your recurring availability so {{ organization.name }} can notify you only for events that match your schedule.
-                        </div>
-                        
-                        <!-- Notification Preference -->
-                        <form id="availabilityForm" method="post">
-                            {% csrf_token %}
-                            {{ form.availability_data }}
-                            
-                            <div class="card mb-4">
-                                <div class="card-header">
-                                    <h5><i class="fas fa-bell me-2"></i>Notification Preference</h5>
-                                </div>
-                                <div class="card-body">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="notification_preference" id="all_events" value="all" {% if anonymous_subscription.notification_preference == 'all' %}checked{% endif %}>
-                                        <label class="form-check-label" for="all_events">
-                                            <strong>All Events</strong> - Get notified about every event from this organization
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="notification_preference" id="matching_events" value="matching" {% if anonymous_subscription.notification_preference == 'matching' %}checked{% endif %}>
-                                        <label class="form-check-label" for="matching_events">
-                                            <strong>Matching Schedule Only</strong> - Get notified only for events that fit your availability below
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Availability Builder -->
-                            <div class="card">
-                                <div class="card-header d-flex justify-content-between align-items-center">
-                                    <h5><i class="fas fa-clock me-2"></i>Your Availability Schedule</h5>
-                                    <button type="button" class="btn btn-primary btn-sm" id="addAvailabilityBtn">
-                                        <i class="fas fa-plus me-1"></i>Add Time Slot
-                                    </button>
-                                </div>
-                                <div class="card-body">
-                                    <div id="availabilityList">
-                                        <!-- Availability items will be dynamically added here -->
-                                    </div>
-                                    
-                                    <div id="emptyState" class="text-center text-muted py-4">
-                                        <i class="fas fa-calendar-plus fa-3x mb-3"></i>
-                                        <p>No availability set yet. Click "Add Time Slot" to get started!</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="mt-4">
-                                <button type="submit" class="btn btn-success btn-lg">
-                                    <i class="fas fa-save me-2"></i>Save Availability
-                                </button>
-                                <a href="{% url 'organizations:detail' organization.pk %}" class="btn btn-secondary btn-lg">
-                                    <i class="fas fa-arrow-left me-2"></i>Back to Organization
-                                </a>
-                            </div>
-                        </form>
+                    <div class="col-md-6">
+                        <strong>Name:</strong> {{ anonymous_subscription.name }}
                     </div>
-                    
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5><i class="fas fa-question-circle me-2"></i>How It Works</h5>
+                    <div class="col-md-6">
+                        <strong>Email:</strong> {{ anonymous_subscription.email }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Availability Form -->
+            <form method="post" id="availabilityForm">
+                {% csrf_token %}
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar-alt me-2"></i>Availability Settings
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {{ form|crispy }}
+
+                        <!-- Notification Preferences -->
+                        <div class="mt-4">
+                            <label class="form-label fw-bold">Notification Preferences</label>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="notification_preference"
+                                       id="notifyAll" value="all"
+                                       {% if anonymous_subscription.notification_preference == 'all' %}checked{% endif %}>
+                                <label class="form-check-label" for="notifyAll">
+                                    <strong>All Events</strong> - Get notified about every event
+                                </label>
                             </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div class="availability-sure-badge me-2"></div>
-                                        <strong>Sure (Green)</strong>
-                                    </div>
-                                    <small class="text-muted">You will definitely be available during these times</small>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <div class="d-flex align-items-center mb-2">
-                                        <div class="availability-maybe-badge me-2"></div>
-                                        <strong>Maybe (Yellow)</strong>
-                                    </div>
-                                    <small class="text-muted">You might be available during these times</small>
-                                </div>
-                                
-                                <hr>
-                                
-                                <h6><i class="fas fa-repeat me-2"></i>Recurrence Options:</h6>
-                                <ul class="list-unstyled small">
-                                    <li><strong>Weekly:</strong> Every week on specific days</li>
-                                    <li><strong>Monthly:</strong> Same day of each month</li>
-                                    <li><strong>Specific Date:</strong> One-time availability</li>
-                                </ul>
-                                
-                                <hr>
-                                
-                                <h6><i class="fas fa-user-shield me-2"></i>Anonymous Subscription</h6>
-                                <p class="small text-muted">
-                                    You're subscribed anonymously. Your data is only used for event notifications and is not shared with third parties.
-                                </p>
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="notification_preference"
+                                       id="notifyMatching" value="matching"
+                                       {% if anonymous_subscription.notification_preference == 'matching' %}checked{% endif %}>
+                                <label class="form-check-label" for="notifyMatching">
+                                    <strong>Matching Schedule Only</strong> - Only get notified about events that match your availability
+                                </label>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+
+                <!-- Submit Buttons -->
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary btn-lg me-3">
+                        <i class="fas fa-save me-2"></i>Save Availability
+                    </button>
+                    <a href="{% url 'organizations:detail' pk=organization.id %}" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-times me-2"></i>Cancel
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
-</div>
 
-<!-- Add Availability Modal -->
-<div class="modal fade" id="availabilityModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Availability Slot</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+        <div class="org-info mb-4">
+            <div class="mb-3">
+                {% if organization.logo %}
+                    <img src="{{ organization.logo.url }}" alt="{{ organization.name }}"
+                         class="img-fluid rounded-circle mb-2" style="max-width: 80px;">
+                {% else %}
+                    <i class="fas fa-building fa-3x mb-2"></i>
+                {% endif %}
             </div>
-            <div class="modal-body">
-                <form id="addAvailabilityForm">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label class="form-label">Recurrence Type</label>
-                            <select class="form-select" id="recurrenceType" required>
-                                <option value="">Choose...</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                                <option value="specific_date">Specific Date</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Availability Type</label>
-                            <select class="form-select" id="availabilityType" required>
-                                <option value="sure">Sure (Green)</option>
-                                <option value="maybe">Maybe (Yellow)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- Weekly Options -->
-                    <div id="weeklyOptions" class="mt-3" style="display: none;">
-                        <label class="form-label">Day of Week</label>
-                        <select class="form-select" id="dayOfWeek">
-                            <option value="">Choose day...</option>
-                            <option value="0">Monday</option>
-                            <option value="1">Tuesday</option>
-                            <option value="2">Wednesday</option>
-                            <option value="3">Thursday</option>
-                            <option value="4">Friday</option>
-                            <option value="5">Saturday</option>
-                            <option value="6">Sunday</option>
-                        </select>
-                    </div>
-                    
-                    <!-- Monthly Options -->
-                    <div id="monthlyOptions" class="mt-3" style="display: none;">
-                        <label class="form-label">Day of Month</label>
-                        <select class="form-select" id="dayOfMonth">
-                            <option value="">Choose day...</option>
-                            {% for i in "123456789012345678901234567890123" %}
-                                <option value="{{ forloop.counter }}">{{ forloop.counter }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <!-- Specific Date Options -->
-                    <div id="specificDateOptions" class="mt-3" style="display: none;">
-                        <label class="form-label">Specific Date</label>
-                        <input type="date" class="form-control" id="specificDate">
-                    </div>
-                    
-                    <!-- Time Slots -->
-                    <div class="mt-4">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <label class="form-label mb-0">Time Slots</label>
-                            <button type="button" class="btn btn-sm btn-outline-primary" id="addTimeSlotBtn">
-                                <i class="fas fa-plus me-1"></i>Add Time Slot
-                            </button>
-                        </div>
-                        <div id="timeSlotsList">
-                            <!-- Time slots will be added here -->
-                        </div>
-                    </div>
-                </form>
+            <h5 class="fw-bold">{{ organization.name }}</h5>
+            {% if organization.description %}
+                <p class="mb-0">{{ organization.description|truncatechars:150 }}</p>
+            {% endif %}
+        </div>
+
+        <!-- Help Section -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-transparent border-0">
+                <h6 class="mb-0">
+                    <i class="fas fa-question-circle me-2"></i>Need Help?
+                </h6>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="saveAvailabilityBtn">
-                    <i class="fas fa-save me-1"></i>Add Availability
-                </button>
+            <div class="card-body">
+                <small class="text-muted">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-lightbulb me-1 text-warning"></i>
+                            Set your weekly availability patterns
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-lightbulb me-1 text-warning"></i>
+                            Choose specific dates when needed
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-lightbulb me-1 text-warning"></i>
+                            Use "Maybe" for flexible availability
+                        </li>
+                    </ul>
+                </small>
             </div>
         </div>
     </div>
@@ -212,299 +153,15 @@
 
 {% block scripts %}
 <script>
-// Availability management
-let availabilityData = {{ existing_availability|safe }};
-let editingIndex = -1;
-
-// Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    renderAvailabilityList();
-    setupEventListeners();
+    // Pre-populate form with existing availability data
+    const availabilityData = {{ availability_json|safe }};
+
+    // Form submission with loading
+    const form = document.getElementById('availabilityForm');
+    form.addEventListener('submit', function() {
+        showLoading();
+    });
 });
-
-function setupEventListeners() {
-    // Add availability button
-    document.getElementById('addAvailabilityBtn').addEventListener('click', function() {
-        editingIndex = -1;
-        clearModal();
-        const modal = new bootstrap.Modal(document.getElementById('availabilityModal'));
-        modal.show();
-    });
-    
-    // Recurrence type change
-    document.getElementById('recurrenceType').addEventListener('change', function() {
-        toggleRecurrenceOptions(this.value);
-    });
-    
-    // Add time slot button
-    document.getElementById('addTimeSlotBtn').addEventListener('click', addTimeSlot);
-    
-    // Save availability button
-    document.getElementById('saveAvailabilityBtn').addEventListener('click', saveAvailability);
-    
-    // Form submission
-    document.getElementById('availabilityForm').addEventListener('submit', function(e) {
-        document.getElementById('id_availability_data').value = JSON.stringify(availabilityData);
-    });
-}
-
-function toggleRecurrenceOptions(type) {
-    document.getElementById('weeklyOptions').style.display = type === 'weekly' ? 'block' : 'none';
-    document.getElementById('monthlyOptions').style.display = type === 'monthly' ? 'block' : 'none';
-    document.getElementById('specificDateOptions').style.display = type === 'specific_date' ? 'block' : 'none';
-}
-
-function addTimeSlot() {
-    const timeSlotsList = document.getElementById('timeSlotsList');
-    const slotIndex = timeSlotsList.children.length;
-    
-    const slotHtml = `
-        <div class="time-slot-item border rounded p-3 mb-2" data-index="${slotIndex}">
-            <div class="row">
-                <div class="col-md-4">
-                    <label class="form-label">Start Time</label>
-                    <input type="time" class="form-control start-time" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">End Time</label>
-                    <input type="time" class="form-control end-time" required>
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="button" class="btn btn-danger btn-sm" onclick="removeTimeSlot(${slotIndex})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    timeSlotsList.insertAdjacentHTML('beforeend', slotHtml);
-}
-
-function removeTimeSlot(index) {
-    const timeSlot = document.querySelector(`[data-index="${index}"]`);
-    if (timeSlot) {
-        timeSlot.remove();
-    }
-}
-
-function saveAvailability() {
-    const form = document.getElementById('addAvailabilityForm');
-    const recurrenceType = document.getElementById('recurrenceType').value;
-    const availabilityType = document.getElementById('availabilityType').value;
-    
-    if (!recurrenceType || !availabilityType) {
-        alert('Please fill in all required fields');
-        return;
-    }
-    
-    // Get time slots
-    const timeSlots = [];
-    const timeSlotItems = document.querySelectorAll('.time-slot-item');
-    
-    for (let item of timeSlotItems) {
-        const startTime = item.querySelector('.start-time').value;
-        const endTime = item.querySelector('.end-time').value;
-        
-        if (startTime && endTime) {
-            timeSlots.push({
-                start: startTime,
-                end: endTime,
-                type: availabilityType
-            });
-        }
-    }
-    
-    if (timeSlots.length === 0) {
-        alert('Please add at least one time slot');
-        return;
-    }
-    
-    // Build availability object
-    const availability = {
-        recurrence_type: recurrenceType,
-        availability_type: availabilityType,
-        time_slots: timeSlots
-    };
-    
-    // Add specific fields based on recurrence type
-    if (recurrenceType === 'weekly') {
-        const dayOfWeek = document.getElementById('dayOfWeek').value;
-        if (!dayOfWeek) {
-            alert('Please select a day of the week');
-            return;
-        }
-        availability.day_of_week = parseInt(dayOfWeek);
-    } else if (recurrenceType === 'monthly') {
-        const dayOfMonth = document.getElementById('dayOfMonth').value;
-        if (!dayOfMonth) {
-            alert('Please select a day of the month');
-            return;
-        }
-        availability.day_of_month = parseInt(dayOfMonth);
-    } else if (recurrenceType === 'specific_date') {
-        const specificDate = document.getElementById('specificDate').value;
-        if (!specificDate) {
-            alert('Please select a specific date');
-            return;
-        }
-        availability.specific_date = specificDate;
-    }
-    
-    // Add or update availability
-    if (editingIndex >= 0) {
-        availabilityData[editingIndex] = availability;
-    } else {
-        availabilityData.push(availability);
-    }
-    
-    // Close modal and refresh list
-    const modal = bootstrap.Modal.getInstance(document.getElementById('availabilityModal'));
-    modal.hide();
-    renderAvailabilityList();
-}
-
-function renderAvailabilityList() {
-    const list = document.getElementById('availabilityList');
-    const emptyState = document.getElementById('emptyState');
-    
-    if (availabilityData.length === 0) {
-        list.innerHTML = '';
-        emptyState.style.display = 'block';
-        return;
-    }
-    
-    emptyState.style.display = 'none';
-    
-    list.innerHTML = availabilityData.map((item, index) => {
-        const badgeClass = item.availability_type === 'sure' ? 'bg-success' : 'bg-warning';
-        const recurrenceText = getRecurrenceText(item);
-        const timeSlotsText = item.time_slots.map(slot => `${slot.start}-${slot.end}`).join(', ');
-        
-        return `
-            <div class="availability-item border rounded p-3 mb-3">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <div class="d-flex align-items-center mb-2">
-                            <span class="badge ${badgeClass} me-2">${item.availability_type === 'sure' ? 'Sure' : 'Maybe'}</span>
-                            <strong>${recurrenceText}</strong>
-                        </div>
-                        <div class="text-muted">
-                            <i class="fas fa-clock me-1"></i>
-                            ${timeSlotsText}
-                        </div>
-                    </div>
-                    <div class="btn-group">
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="editAvailability(${index})">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeAvailability(${index})">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-function getRecurrenceText(item) {
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    
-    switch (item.recurrence_type) {
-        case 'weekly':
-            return `Every ${days[item.day_of_week]}`;
-        case 'monthly':
-            return `${item.day_of_month}${getOrdinalSuffix(item.day_of_month)} of each month`;
-        case 'specific_date':
-            return `${new Date(item.specific_date).toLocaleDateString()}`;
-        default:
-            return 'Unknown';
-    }
-}
-
-function getOrdinalSuffix(day) {
-    if (day >= 11 && day <= 13) return 'th';
-    switch (day % 10) {
-        case 1: return 'st';
-        case 2: return 'nd';
-        case 3: return 'rd';
-        default: return 'th';
-    }
-}
-
-function editAvailability(index) {
-    editingIndex = index;
-    const item = availabilityData[index];
-    
-    // Populate modal with existing data
-    document.getElementById('recurrenceType').value = item.recurrence_type;
-    document.getElementById('availabilityType').value = item.availability_type;
-    
-    toggleRecurrenceOptions(item.recurrence_type);
-    
-    if (item.recurrence_type === 'weekly') {
-        document.getElementById('dayOfWeek').value = item.day_of_week;
-    } else if (item.recurrence_type === 'monthly') {
-        document.getElementById('dayOfMonth').value = item.day_of_month;
-    } else if (item.recurrence_type === 'specific_date') {
-        document.getElementById('specificDate').value = item.specific_date;
-    }
-    
-    // Clear and populate time slots
-    document.getElementById('timeSlotsList').innerHTML = '';
-    item.time_slots.forEach(slot => {
-        addTimeSlot();
-        const timeSlotItems = document.querySelectorAll('.time-slot-item');
-        const lastItem = timeSlotItems[timeSlotItems.length - 1];
-        lastItem.querySelector('.start-time').value = slot.start;
-        lastItem.querySelector('.end-time').value = slot.end;
-    });
-    
-    const modal = new bootstrap.Modal(document.getElementById('availabilityModal'));
-    modal.show();
-}
-
-function removeAvailability(index) {
-    if (confirm('Are you sure you want to remove this availability slot?')) {
-        availabilityData.splice(index, 1);
-        renderAvailabilityList();
-    }
-}
-
-function clearModal() {
-    document.getElementById('addAvailabilityForm').reset();
-    document.getElementById('timeSlotsList').innerHTML = '';
-    toggleRecurrenceOptions('');
-}
 </script>
-
-<style>
-.availability-sure-badge {
-    width: 20px;
-    height: 20px;
-    background-color: #28a745;
-    border-radius: 50%;
-}
-
-.availability-maybe-badge {
-    width: 20px;
-    height: 20px;
-    background-color: #ffc107;
-    border-radius: 50%;
-}
-
-.availability-item {
-    transition: all 0.3s ease;
-}
-
-.availability-item:hover {
-    border-color: #007bff !important;
-    box-shadow: 0 0.25rem 0.5rem rgba(0, 123, 255, 0.15);
-}
-
-.time-slot-item {
-    background-color: #f8f9fa;
-}
-</style>
 {% endblock %}

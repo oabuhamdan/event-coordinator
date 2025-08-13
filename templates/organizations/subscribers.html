@@ -2,11 +2,110 @@
 
 {% block title %}Subscribers - {{ organization.name }}{% endblock %}
 
+{% block extra_css %}
+<style>
+.subscriber-card {
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.subscriber-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.subscriber-card.has-availability {
+    border-left: 4px solid #28a745;
+}
+
+.subscriber-card.no-availability {
+    border-left: 4px solid #dc3545;
+}
+
+.availability-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.availability-details {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+    display: none;
+}
+
+.availability-item {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.availability-item.sure {
+    border-left: 4px solid #28a745;
+}
+
+.availability-item.maybe {
+    border-left: 4px solid #ffc107;
+}
+
+.time-slot {
+    background: #e9ecef;
+    border-radius: 4px;
+    padding: 2px 8px;
+    margin: 2px;
+    display: inline-block;
+    font-size: 0.875rem;
+}
+
+.priority-badge {
+    background: linear-gradient(45deg, #28a745, #20c997);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+
+.section-divider {
+    border-bottom: 3px solid #e9ecef;
+    margin: 30px 0;
+    padding-bottom: 10px;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.btn-loading {
+    position: relative;
+}
+
+.btn-loading:disabled {
+    opacity: 0.6;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row mb-4">
     <div class="col-md-8">
         <h2><i class="fas fa-users me-2"></i>Subscribers</h2>
-        <p class="text-muted">{{ organization.name }} - {{ subscribers.count }} total subscribers</p>
+        <p class="text-muted">{{ organization.name }} - {{ total_subscribers }} total subscribers ({{ total_with_availability }} with availability set)</p>
     </div>
     <div class="col-md-4 text-end">
         <a href="{% url 'organizations:dashboard' %}" class="btn btn-secondary">
@@ -15,65 +114,370 @@
     </div>
 </div>
 
-<div class="row">
-    <div class="col-12">
-        <div class="card">
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center bg-primary text-white">
             <div class="card-body">
-                {% if subscribers %}
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>User</th>
-                                    <th>Contact</th>
-                                    <th>Notification Preference</th>
-                                    <th>Subscribed Date</th>
-                                    <th>Availability</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for subscription in subscribers %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ subscription.user.username }}</strong><br>
-                                        <small class="text-muted">{{ subscription.user.email }}</small>
-                                    </td>
-                                    <td>
-                                        {% if subscription.user.phone_number %}
-                                            <i class="fas fa-phone me-1"></i>{{ subscription.user.phone_number }}<br>
-                                        {% endif %}
-                                        {% if subscription.user.whatsapp_number %}
-                                            <i class="fab fa-whatsapp me-1"></i>{{ subscription.user.whatsapp_number }}
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if subscription.notification_preference == 'all' %}
-                                            <span class="badge bg-primary">All Events</span>
-                                        {% else %}
-                                            <span class="badge bg-info">Matching Schedule</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>{{ subscription.created_at|date:"M d, Y" }}</td>
-                                    <td>
-                                        {% if subscription.user.useravailability_set.all %}
-                                            <span class="badge bg-success">Set</span>
-                                        {% else %}
-                                            <span class="badge bg-warning">Not Set</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="alert alert-info text-center">
-                        <i class="fas fa-info-circle me-2"></i>
-                        No subscribers yet. Share your organization profile to get more subscribers!
-                    </div>
-                {% endif %}
+                <h5 class="card-title">{{ total_subscribers }}</h5>
+                <p class="card-text mb-0">Total Subscribers</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">{{ total_with_availability }}</h5>
+                <p class="card-text mb-0">With Availability</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title">{{ regular_subscribers_data|length }}</h5>
+                <p class="card-text mb-0">Registered Users</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title">{{ anonymous_subscribers_data|length }}</h5>
+                <p class="card-text mb-0">Anonymous</p>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Registered Subscribers -->
+{% if regular_subscribers_data %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="section-divider">
+            <i class="fas fa-user-check me-2 text-success"></i>Registered Subscribers ({{ regular_subscribers_data|length }})
+            <small class="text-muted ms-2">- Sorted by availability status</small>
+        </h4>
+
+        <div class="row">
+            {% for subscriber_data in regular_subscribers_data %}
+            <div class="col-lg-6 col-xl-4 mb-3">
+                <div class="card subscriber-card {% if subscriber_data.has_availability %}has-availability{% else %}no-availability{% endif %} position-relative">
+                    <!-- Priority Badge -->
+                    {% if subscriber_data.has_availability %}
+                        <span class="availability-badge">
+                            <span class="priority-badge">
+                                <i class="fas fa-star me-1"></i>Priority
+                            </span>
+                        </span>
+                    {% endif %}
+
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="card-title mb-1">
+                                    <strong>{{ subscriber_data.user.username }}</strong>
+                                    {% if subscriber_data.has_availability %}
+                                        <i class="fas fa-check-circle text-success ms-1" title="Has availability set"></i>
+                                    {% else %}
+                                        <i class="fas fa-exclamation-triangle text-warning ms-1" title="No availability set"></i>
+                                    {% endif %}
+                                </h6>
+                                <small class="text-muted d-block">{{ subscriber_data.user.email }}</small>
+                            </div>
+                        </div>
+
+                        <!-- Contact Info -->
+                        <div class="mb-2">
+                            {% if subscriber_data.user.phone_number %}
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-phone me-1"></i>{{ subscriber_data.user.phone_number }}
+                                </small>
+                            {% endif %}
+                            {% if subscriber_data.user.whatsapp_number %}
+                                <small class="text-muted d-block">
+                                    <i class="fab fa-whatsapp me-1"></i>{{ subscriber_data.user.whatsapp_number }}
+                                </small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Subscription Info -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="badge {% if subscriber_data.subscription.notification_preference == 'all' %}bg-primary{% else %}bg-info{% endif %}">
+                                {{ subscriber_data.subscription.get_notification_preference_display }}
+                            </span>
+                            <small class="text-muted">{{ subscriber_data.subscription.created_at|date:"M d, Y" }}</small>
+                        </div>
+
+                        <!-- Availability Status -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                {% if subscriber_data.has_availability %}
+                                    <span class="badge bg-success">
+                                        {{ subscriber_data.availability_count }} availability record{{ subscriber_data.availability_count|pluralize }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">No availability set</span>
+                                {% endif %}
+                            </div>
+
+                            {% if subscriber_data.has_availability %}
+                                <button class="btn btn-sm btn-outline-primary"
+                                        onclick="loadAvailability('user', {{ subscriber_data.user.id }}, 'reg-{{ subscriber_data.user.id }}', this)">
+                                    <i class="fas fa-eye me-1"></i>View Availability
+                                </button>
+                            {% endif %}
+                        </div>
+
+                        <!-- Availability Details (loaded via AJAX) -->
+                        <div id="reg-{{ subscriber_data.user.id }}" class="availability-details">
+                            <!-- Content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Anonymous Subscribers -->
+{% if anonymous_subscribers_data %}
+<div class="row">
+    <div class="col-12">
+        <h4 class="section-divider">
+            <i class="fas fa-user-secret me-2 text-info"></i>Anonymous Subscribers ({{ anonymous_subscribers_data|length }})
+            <small class="text-muted ms-2">- Sorted by availability status</small>
+        </h4>
+
+        <div class="row">
+            {% for subscriber_data in anonymous_subscribers_data %}
+            <div class="col-lg-6 col-xl-4 mb-3">
+                <div class="card subscriber-card {% if subscriber_data.has_availability %}has-availability{% else %}no-availability{% endif %} position-relative">
+                    <!-- Priority Badge -->
+                    {% if subscriber_data.has_availability %}
+                        <span class="availability-badge">
+                            <span class="priority-badge">
+                                <i class="fas fa-star me-1"></i>Priority
+                            </span>
+                        </span>
+                    {% endif %}
+
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="card-title mb-1">
+                                    <strong>{{ subscriber_data.subscription.name|default:"Anonymous User" }}</strong>
+                                    {% if subscriber_data.has_availability %}
+                                        <i class="fas fa-check-circle text-success ms-1" title="Has availability set"></i>
+                                    {% else %}
+                                        <i class="fas fa-exclamation-triangle text-warning ms-1" title="No availability set"></i>
+                                    {% endif %}
+                                </h6>
+                                <small class="text-muted d-block">{{ subscriber_data.subscription.email }}</small>
+                            </div>
+                        </div>
+
+                        <!-- Contact Info -->
+                        <div class="mb-2">
+                            {% if subscriber_data.subscription.phone_number %}
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-phone me-1"></i>{{ subscriber_data.subscription.phone_number }}
+                                </small>
+                            {% endif %}
+                            {% if subscriber_data.subscription.whatsapp_number %}
+                                <small class="text-muted d-block">
+                                    <i class="fab fa-whatsapp me-1"></i>{{ subscriber_data.subscription.whatsapp_number }}
+                                </small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Subscription Info -->
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="badge {% if subscriber_data.subscription.notification_preference == 'all' %}bg-primary{% else %}bg-info{% endif %}">
+                                    {{ subscriber_data.subscription.get_notification_preference_display }}
+                                </span>
+                                <span class="badge bg-secondary ms-1">Anonymous</span>
+                            </div>
+                            <small class="text-muted">{{ subscriber_data.subscription.created_at|date:"M d, Y" }}</small>
+                        </div>
+
+                        <!-- Availability Status -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                {% if subscriber_data.has_availability %}
+                                    <span class="badge bg-success">
+                                        {{ subscriber_data.availability_count }} availability record{{ subscriber_data.availability_count|pluralize }}
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">No availability set</span>
+                                {% endif %}
+                            </div>
+
+                            {% if subscriber_data.has_availability %}
+                                <button class="btn btn-sm btn-outline-primary"
+                                        onclick="loadAvailability('anonymous', {{ subscriber_data.subscription.id }}, 'anon-{{ subscriber_data.subscription.id }}', this)">
+                                    <i class="fas fa-eye me-1"></i>View Availability
+                                </button>
+                            {% endif %}
+                        </div>
+
+                        <!-- Availability Details (loaded via AJAX) -->
+                        <div id="anon-{{ subscriber_data.subscription.id }}" class="availability-details">
+                            <!-- Content will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- No Subscribers Message -->
+{% if not regular_subscribers_data and not anonymous_subscribers_data %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="alert alert-info text-center">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No subscribers yet. Share your organization profile to get more subscribers!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+let loadedAvailability = new Set(); // Track which availability data has been loaded
+
+function loadAvailability(subscriberType, subscriberId, containerId, buttonElement) {
+    const container = document.getElementById(containerId);
+    const isVisible = container.style.display === 'block';
+
+    // Hide all other availability details first
+    document.querySelectorAll('.availability-details').forEach(el => {
+        el.style.display = 'none';
+    });
+
+    // If already visible, just hide it
+    if (isVisible) {
+        container.style.display = 'none';
+        return;
+    }
+
+    // If already loaded, just show it
+    const cacheKey = `${subscriberType}-${subscriberId}`;
+    if (loadedAvailability.has(cacheKey)) {
+        container.style.display = 'block';
+        container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        return;
+    }
+
+    // Show loading state
+    buttonElement.disabled = true;
+    const originalContent = buttonElement.innerHTML;
+    buttonElement.innerHTML = '<span class="loading-spinner"></span> Loading...';
+
+    // Load data via AJAX
+    fetch(`/organizations/{{ organization.id }}/subscriber-availability/?type=${subscriberType}&id=${subscriberId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Render availability data
+                container.innerHTML = renderAvailabilityData(data);
+                container.style.display = 'block';
+                loadedAvailability.add(cacheKey);
+
+                // Scroll to the details
+                setTimeout(() => {
+                    container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 100);
+            } else {
+                container.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Error loading availability: ${data.error || 'Unknown error'}
+                    </div>
+                `;
+                container.style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading availability:', error);
+            container.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Failed to load availability data. Please try again.
+                </div>
+            `;
+            container.style.display = 'block';
+        })
+        .finally(() => {
+            // Restore button state
+            buttonElement.disabled = false;
+            buttonElement.innerHTML = originalContent;
+        });
+}
+
+function renderAvailabilityData(data) {
+    let html = `
+        <h6><i class="fas fa-calendar-alt me-2"></i>Availability Schedule for ${data.subscriber_name}</h6>
+    `;
+
+    if (data.availability_data && data.availability_data.length > 0) {
+        data.availability_data.forEach(availability => {
+            const badgeClass = availability.availability_type === 'sure' ? 'bg-success' : 'bg-warning text-dark';
+
+            html += `
+                <div class="availability-item ${availability.availability_type}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <strong>
+                                <i class="${availability.recurrence_icon} me-1"></i>
+                                ${availability.recurrence_display}
+                            </strong>
+                            <div class="mt-1">
+            `;
+
+            availability.time_slots.forEach(slot => {
+                html += `<span class="time-slot">${slot.start} - ${slot.end}</span>`;
+            });
+
+            html += `
+                            </div>
+                        </div>
+                        <span class="badge ${badgeClass}">
+                            ${availability.availability_type_display}
+                        </span>
+                    </div>
+                </div>
+            `;
+        });
+    } else {
+        html += `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No availability records found.
+            </div>
+        `;
+    }
+
+    return html;
+}
+
+// Close availability details when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.subscriber-card') && !event.target.closest('.availability-details')) {
+        document.querySelectorAll('.availability-details').forEach(el => {
+            el.style.display = 'none';
+        });
+    }
+});
+</script>
 {% endblock %}

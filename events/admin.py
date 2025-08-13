@@ -1,11 +1,6 @@
 from django.contrib import admin
-from .models import UserAvailability, Event, EventResponse, NotificationLog
+from .models import Event, EventResponse
 
-@admin.register(UserAvailability)
-class UserAvailabilityAdmin(admin.ModelAdmin):
-    list_display = ('user', 'organization', 'availability_type', 'created_at')
-    list_filter = ('availability_type', 'organization')
-    search_fields = ('user__username', 'organization__name')
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
@@ -14,14 +9,18 @@ class EventAdmin(admin.ModelAdmin):
     search_fields = ('title', 'organization__name')
     readonly_fields = ('created_at', 'updated_at')
 
+
 @admin.register(EventResponse)
 class EventResponseAdmin(admin.ModelAdmin):
-    list_display = ('user', 'event', 'response', 'responded_at')
+    list_display = ('get_responder', 'event', 'response', 'responded_at')
     list_filter = ('response', 'responded_at')
-    search_fields = ('user__username', 'event__title')
+    search_fields = ('event__title', 'user__username', 'anonymous_subscription__name')
 
-@admin.register(NotificationLog)
-class NotificationLogAdmin(admin.ModelAdmin):
-    list_display = ('user', 'event', 'notification_type', 'success', 'sent_at')
-    list_filter = ('notification_type', 'success', 'sent_at')
-    search_fields = ('user__username', 'event__title')
+    def get_responder(self, obj):
+        """Get the responder name (user or anonymous)"""
+        if obj.user:
+            return obj.user.username
+        elif obj.anonymous_subscription:
+            return f"{obj.anonymous_subscription.name} (Anonymous)"
+        return "Unknown"
+    get_responder.short_description = 'Responder'

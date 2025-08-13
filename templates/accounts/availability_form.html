@@ -1,0 +1,875 @@
+{% extends 'base.html' %}
+
+{% block title %}Set Availability - {{ organization.name }}{% endblock %}
+
+{% block extra_css %}
+    <style>
+        .availability-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .day-selector, .date-selector {
+            margin: 5px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .day-selector.active, .date-selector.active {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+
+        .availability-day {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background: white;
+        }
+
+        .availability-day.specific-date {
+            border-color: #17a2b8;
+        }
+
+        .day-header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border-radius: 8px 8px 0 0;
+            padding: 15px;
+            margin: -1px -1px 15px -1px;
+        }
+
+        .day-header.specific-date {
+            background: linear-gradient(135deg, #17a2b8 0%, #117a8b 100%);
+        }
+
+        .time-slot {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .time-slot.sure {
+            border-left: 4px solid #28a745;
+        }
+
+        .time-slot.maybe {
+            border-left: 4px solid #ffc107;
+        }
+
+        .add-time-slot {
+            border: 2px dashed #6c757d;
+            background: transparent;
+            color: #6c757d;
+            padding: 15px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-time-slot:hover {
+            border-color: #007bff;
+            color: #007bff;
+            background: rgba(0, 123, 255, 0.1);
+        }
+
+        .subscriber-info {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .tab-content {
+            margin-top: 20px;
+        }
+
+        .nav-tabs .nav-link {
+            border-radius: 10px 10px 0 0;
+        }
+
+        .specific-date-input {
+            max-width: 200px;
+        }
+
+        .empty-slots-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="availability-container">
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-calendar-alt me-2"></i>Set Your Availability - {{ organization.name }}</h4>
+                        {% if user_type == 'anonymous' and anonymous_subscription %}
+                            <div class="subscriber-info mt-2">
+                                <i class="fas fa-user-secret me-2"></i>
+                                Subscribed as: <strong>{{ anonymous_subscription.name }}</strong>
+                                ({{ anonymous_subscription.email }})
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <form method="post" id="availability-form">
+                            {% csrf_token %}
+                            <input type="hidden" name="availability_data" id="availability-data" value="">
+
+                            <!-- Availability Type Tabs -->
+                            <ul class="nav nav-tabs" id="availabilityTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active" id="weekly-tab" data-bs-toggle="tab"
+                                            data-bs-target="#weekly" type="button" role="tab">
+                                        <i class="fas fa-calendar-week me-1"></i>Weekly Schedule
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link" id="specific-tab" data-bs-toggle="tab"
+                                            data-bs-target="#specific" type="button" role="tab">
+                                        <i class="fas fa-calendar-day me-1"></i>Specific Dates
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <div class="tab-content" id="availabilityTabContent">
+                                <!-- Weekly Tab -->
+                                <div class="tab-pane fade show active" id="weekly" role="tabpanel">
+                                    <div class="mb-4">
+                                        <h5><i class="fas fa-calendar-week me-2"></i>Select Days of the Week</h5>
+                                        <p class="text-muted">Choose the days when you're regularly available</p>
+                                        <div class="d-flex flex-wrap">
+                                            <button type="button" class="btn btn-outline-primary day-selector"
+                                                    data-day="0" data-type="weekly">Monday
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary day-selector"
+                                                    data-day="1" data-type="weekly">Tuesday
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary day-selector"
+                                                    data-day="2" data-type="weekly">Wednesday
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary day-selector"
+                                                    data-day="3" data-type="weekly">Thursday
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary day-selector"
+                                                    data-day="4" data-type="weekly">Friday
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary day-selector"
+                                                    data-day="5" data-type="weekly">Saturday
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary day-selector"
+                                                    data-day="6" data-type="weekly">Sunday
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Specific Dates Tab -->
+                                <div class="tab-pane fade" id="specific" role="tabpanel">
+                                    <div class="mb-4">
+                                        <h5><i class="fas fa-calendar-day me-2"></i>Add Specific Dates</h5>
+                                        <p class="text-muted">Choose specific dates when you're available (one-time
+                                            events)</p>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <input type="date" class="form-control specific-date-input"
+                                                   id="specific-date-input" min="{{ today|date:'Y-m-d' }}">
+                                            <button type="button" class="btn btn-outline-info"
+                                                    onclick="addSpecificDate()">
+                                                <i class="fas fa-plus me-1"></i>Add Date
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Empty slots warning -->
+                            <div class="empty-slots-warning" id="empty-slots-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <strong>Note:</strong> Saving without any time slots will remove your current
+                                availability for this organization.
+                            </div>
+
+                            <!-- Selected Days/Dates Container -->
+                            <div id="selected-days"></div>
+
+                            <!-- Submit Button -->
+                            <div class="d-grid gap-2 mt-4">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-save me-2"></i>Save Availability
+                                </button>
+                                {% if user_type == 'registered' %}
+                                    <a href="{% url 'organizations:detail' pk=organization.pk %}"
+                                       class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Organization
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'accounts:anonymous_profile' organization_id=organization.pk %}"
+                                       class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Profile
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-4">
+                {% if user_type == 'anonymous' and anonymous_subscription %}
+                    <!-- Subscription Info -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <h5><i class="fas fa-user-secret me-2"></i>Your Subscription</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Name:</strong> {{ anonymous_subscription.name }}</p>
+                            <p><strong>Email:</strong> {{ anonymous_subscription.email }}</p>
+                            <p><strong>Subscribed:</strong> {{ anonymous_subscription.created_at|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Help Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-info-circle me-2"></i>How It Works</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h6><i class="fas fa-calendar-week me-2 text-primary"></i>Weekly Schedule</h6>
+                            <p class="small text-muted">Set your regular weekly availability (repeats every week).</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6><i class="fas fa-calendar-day me-2 text-info"></i>Specific Dates</h6>
+                            <p class="small text-muted">Add availability for specific dates (one-time events).</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6><i class="fas fa-clock me-2 text-success"></i>Time Slots</h6>
+                            <p class="small text-muted">Add time slots for each day/date.</p>
+                        </div>
+
+                        <div class="mb-3">
+                            <h6><i class="fas fa-palette me-2 text-warning"></i>Availability Types</h6>
+                            <div class="small">
+                                <span class="badge bg-success me-1">Sure</span> - Definitely available<br>
+                                <span class="badge bg-warning text-dark mt-1">Maybe</span> - Might be available
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info small">
+                            <i class="fas fa-lightbulb me-2"></i>
+                            <strong>Tip:</strong> You can remove all time slots to clear your availability for this
+                            organization.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let availabilityData = {};
+        const dayNames = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('Initializing availability form...');
+
+            // Load existing data
+            const existingData = {{ existing_availability|safe }};
+            console.log('Existing data:', existingData);
+
+            loadExistingData(existingData);
+            bindEvents();
+            checkForEmptySlots();
+        });
+
+        function loadExistingData(existingData) {
+            if (existingData && existingData.length > 0) {
+                console.log('Loading existing availability data...');
+
+                const availabilityByDay = {};
+                const availabilityByDate = {};
+
+                existingData.forEach(avail => {
+                    if (avail.recurrence_type === 'weekly' && avail.day_of_week !== null && avail.day_of_week !== undefined) {
+                        const dayIndex = avail.day_of_week;
+
+                        if (!availabilityByDay[dayIndex]) {
+                            availabilityByDay[dayIndex] = [];
+                        }
+
+                        if (avail.time_slots && Array.isArray(avail.time_slots)) {
+                            avail.time_slots.forEach(timeSlot => {
+                                availabilityByDay[dayIndex].push({
+                                    start: timeSlot.start,
+                                    end: timeSlot.end,
+                                    availability_type: avail.availability_type || 'sure'
+                                });
+                            });
+                        }
+                    } else if (avail.recurrence_type === 'specific_date' && avail.specific_date) {
+                        const dateKey = avail.specific_date;
+
+                        if (!availabilityByDate[dateKey]) {
+                            availabilityByDate[dateKey] = [];
+                        }
+
+                        if (avail.time_slots && Array.isArray(avail.time_slots)) {
+                            avail.time_slots.forEach(timeSlot => {
+                                availabilityByDate[dateKey].push({
+                                    start: timeSlot.start,
+                                    end: timeSlot.end,
+                                    availability_type: avail.availability_type || 'sure'
+                                });
+                            });
+                        }
+                    }
+                });
+
+                availabilityData = {...availabilityByDay, ...availabilityByDate};
+
+                // Render existing weekly days
+                Object.keys(availabilityByDay).forEach(dayIndex => {
+                    addDay(parseInt(dayIndex), 'weekly');
+                });
+
+                // Render existing specific dates
+                Object.keys(availabilityByDate).forEach(dateKey => {
+                    addSpecificDateDay(dateKey);
+                });
+            }
+        }
+
+        function bindEvents() {
+            // Day selector buttons
+            document.querySelectorAll('.day-selector').forEach(button => {
+                button.addEventListener('click', function () {
+                    const dayIndex = parseInt(this.dataset.day);
+                    const type = this.dataset.type;
+                    toggleDay(dayIndex, type);
+                });
+            });
+
+            // Form submission
+// Form submission
+            document.getElementById('availability-form').addEventListener('submit', function (e) {
+                e.preventDefault();
+                console.log('Form submission intercepted...');
+
+                // Collect and set the availability data
+                const result = collectAndSetAvailabilityData();
+
+                if (result !== false) { // Allow empty data (result can be 0)
+                    console.log('Data collected successfully, submitting form...');
+                    const form = this;
+                    setTimeout(() => {
+                        form.removeEventListener('submit', arguments.callee);
+                        form.submit();
+                    }, 100);
+                } else {
+                    console.error('Failed to collect availability data');
+                    alert('An error occurred while processing your availability data.');
+                }
+            });
+            // Tab change events
+            document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function () {
+                    checkForEmptySlots();
+                });
+            });
+        }
+
+        function addSpecificDate() {
+            const dateInput = document.getElementById('specific-date-input');
+            const selectedDate = dateInput.value;
+
+            if (!selectedDate) {
+                alert('Please select a date first.');
+                return;
+            }
+
+            // Check if date already exists
+            if (document.getElementById(`date-${selectedDate}`)) {
+                alert('This date has already been added.');
+                return;
+            }
+
+            addSpecificDateDay(selectedDate);
+            dateInput.value = ''; // Clear the input
+        }
+
+        function addSpecificDateDay(dateKey) {
+            const selectedDaysContainer = document.getElementById('selected-days');
+
+            // Check if date already exists
+            if (document.getElementById(`date-${dateKey}`)) {
+                return;
+            }
+
+            console.log(`Adding specific date: ${dateKey}`);
+
+            // Initialize data structure
+            if (!availabilityData[dateKey]) {
+                availabilityData[dateKey] = [];
+            }
+
+            // Format date for display
+            const dateObj = new Date(dateKey + 'T00:00:00');
+            const dayName = dayNames[dateObj.getDay()];
+            const formattedDate = dateObj.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            const dayHtml = `
+        <div class="card availability-day specific-date" id="date-${dateKey}">
+            <div class="card-body">
+                <div class="day-header specific-date">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar-day me-2"></i>${dayName}, ${formattedDate}
+                            <span class="badge bg-light text-dark ms-2">Specific Date</span>
+                        </h5>
+                        <button type="button" class="btn btn-light btn-sm" onclick="removeSpecificDate('${dateKey}')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="time-slots-date-${dateKey}" class="time-slots-container"></div>
+
+                <div class="add-time-slot" onclick="addTimeSlotToDate('${dateKey}')">
+                    <i class="fas fa-plus me-2"></i>Add Time Slot
+                </div>
+            </div>
+        </div>
+    `;
+
+            selectedDaysContainer.insertAdjacentHTML('beforeend', dayHtml);
+
+            // Add existing time slots or one default slot
+            if (availabilityData[dateKey] && availabilityData[dateKey].length > 0) {
+                availabilityData[dateKey].forEach(slot => {
+                    addTimeSlotToDateDOM(dateKey, slot.start, slot.end, slot.availability_type);
+                });
+            } else {
+                addTimeSlotToDate(dateKey);
+            }
+
+            checkForEmptySlots();
+            console.log(`✓ Specific date ${dateKey} added successfully`);
+        }
+
+        function removeSpecificDate(dateKey) {
+            console.log(`Removing specific date: ${dateKey}`);
+
+            const dateElement = document.getElementById(`date-${dateKey}`);
+            if (dateElement) {
+                dateElement.remove();
+            }
+
+            delete availabilityData[dateKey];
+            checkForEmptySlots();
+        }
+
+        function addTimeSlotToDate(dateKey) {
+            console.log(`Adding time slot to specific date ${dateKey}`);
+            addTimeSlotToDateDOM(dateKey, '09:00', '17:00', 'sure');
+            checkForEmptySlots();
+        }
+
+        function addTimeSlotToDateDOM(dateKey, startTime = '09:00', endTime = '17:00', availabilityType = 'sure') {
+            const timeSlotsContainer = document.getElementById(`time-slots-date-${dateKey}`);
+
+            if (!timeSlotsContainer) {
+                console.error(`Time slots container not found for date ${dateKey}`);
+                return;
+            }
+
+            const timestamp = Date.now();
+            const random = Math.random().toString(36).substr(2, 5);
+            const slotId = `slot-date-${dateKey}-${timestamp}-${random}`;
+
+            console.log(`Creating time slot with ID: ${slotId}`);
+
+            const timeSlotHtml = `
+        <div class="time-slot ${availabilityType}" id="${slotId}">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label small">Start Time</label>
+                    <input type="time" class="form-control form-control-sm time-start" value="${startTime}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">End Time</label>
+                    <input type="time" class="form-control form-control-sm time-end" value="${endTime}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small">Availability</label>
+                    <select class="form-select form-select-sm availability-type" onchange="updateAvailabilityType(this, '${slotId}')">
+                        <option value="sure" ${availabilityType === 'sure' ? 'selected' : ''}>Sure (Green)</option>
+                        <option value="maybe" ${availabilityType === 'maybe' ? 'selected' : ''}>Maybe (Yellow)</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">&nbsp;</label>
+                    <button type="button" class="btn btn-danger btn-sm w-100" onclick="removeTimeSlot('${slotId}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+            timeSlotsContainer.insertAdjacentHTML('beforeend', timeSlotHtml);
+            console.log(`✓ Time slot ${slotId} added to date ${dateKey}`);
+        }
+
+        function collectAndSetAvailabilityData() {
+            console.log('=== COLLECTING AVAILABILITY DATA ===');
+
+            const formData = [];
+
+            // Get all availability day containers (both weekly and specific dates)
+            const availabilityDays = document.querySelectorAll('.availability-day');
+            console.log(`Found ${availabilityDays.length} availability containers`);
+
+            // If no days are selected, that's fine - user wants to clear their availability
+            if (availabilityDays.length === 0) {
+                console.log('No availability days found - user is clearing their availability');
+                const hiddenField = document.getElementById('availability-data');
+                if (hiddenField) {
+                    hiddenField.value = JSON.stringify([]);
+                    console.log('✓ Set empty availability data for clearing');
+                    return 0; // Return 0 to indicate empty but valid submission
+                }
+                return false;
+            }
+
+            let totalValidSlots = 0;
+
+            availabilityDays.forEach((dayElement, dayIdx) => {
+                const dayId = dayElement.id;
+
+                let isSpecificDate = dayId.startsWith('date-');
+                let identifier, recurrenceType;
+
+                if (isSpecificDate) {
+                    identifier = dayId.replace('date-', '');
+                    recurrenceType = 'specific_date';
+                    console.log(`Processing specific date container ${dayIdx}: ${dayId} (date: ${identifier})`);
+                } else {
+                    identifier = parseInt(dayId.split('-')[1]);
+                    recurrenceType = 'weekly';
+                    console.log(`Processing weekly day container ${dayIdx}: ${dayId} (day index: ${identifier})`);
+                }
+
+                // Get all time slots within this day
+                const timeSlots = dayElement.querySelectorAll('.time-slot');
+                console.log(`  Found ${timeSlots.length} time slots`);
+
+                // If a day has no time slots, we still need to create an entry to clear that day's availability
+                if (timeSlots.length === 0) {
+                    console.log(`  No time slots found for ${recurrenceType} ${identifier} - this will clear availability for this day`);
+
+                    const availabilityItem = {
+                        recurrence_type: recurrenceType,
+                        time_slots: [], // Empty time slots array
+                        availability_type: 'sure' // Default type, but won't matter since time_slots is empty
+                    };
+
+                    if (recurrenceType === 'weekly') {
+                        availabilityItem.day_of_week = identifier;
+                    } else {
+                        availabilityItem.specific_date = identifier;
+                    }
+
+                    formData.push(availabilityItem);
+                    console.log(`  ✓ Created empty availability item for clearing:`, availabilityItem);
+                    return; // Skip to next day
+                }
+
+                const dayAvailabilities = {};
+                let dayValidSlots = 0;
+
+                timeSlots.forEach((slotElement, slotIdx) => {
+                    console.log(`    Processing slot ${slotIdx}: ${slotElement.id}`);
+
+                    const allTimeInputs = slotElement.querySelectorAll('input[type="time"]');
+                    const startInput = allTimeInputs[0];
+                    const endInput = allTimeInputs[1];
+                    const typeSelect = slotElement.querySelector('select');
+
+                    if (!startInput || !endInput || !typeSelect) {
+                        console.warn(`      Missing elements in slot ${slotIdx}`);
+                        return;
+                    }
+
+                    const startTime = startInput.value;
+                    const endTime = endInput.value;
+                    const availabilityType = typeSelect.value;
+
+                    console.log(`      Values: ${startTime} - ${endTime} (${availabilityType})`);
+
+                    if (!startTime || !endTime) {
+                        console.warn(`      Empty time values in slot ${slotIdx}`);
+                        return;
+                    }
+
+                    if (startTime >= endTime) {
+                        console.warn(`      Invalid time range in slot ${slotIdx}: ${startTime} >= ${endTime}`);
+                        return;
+                    }
+
+                    if (!dayAvailabilities[availabilityType]) {
+                        dayAvailabilities[availabilityType] = [];
+                    }
+
+                    dayAvailabilities[availabilityType].push({
+                        start: startTime,
+                        end: endTime
+                    });
+
+                    dayValidSlots++;
+                    totalValidSlots++;
+
+                    console.log(`      ✓ Added valid slot: ${startTime} - ${endTime} (${availabilityType})`);
+                });
+
+                console.log(`  Container has ${dayValidSlots} valid slots`);
+
+                // Create availability records for each type
+                Object.keys(dayAvailabilities).forEach(availabilityType => {
+                    const slots = dayAvailabilities[availabilityType];
+                    if (slots.length > 0) {
+                        const availabilityItem = {
+                            recurrence_type: recurrenceType,
+                            time_slots: slots,
+                            availability_type: availabilityType
+                        };
+
+                        if (recurrenceType === 'weekly') {
+                            availabilityItem.day_of_week = identifier;
+                        } else {
+                            availabilityItem.specific_date = identifier;
+                        }
+
+                        formData.push(availabilityItem);
+                        console.log(`  ✓ Created availability item:`, availabilityItem);
+                    }
+                });
+            });
+
+            console.log(`Total valid slots found: ${totalValidSlots}`);
+            console.log(`Final form data (${formData.length} items):`, formData);
+
+            // Convert to JSON and set in hidden field
+            const jsonData = JSON.stringify(formData);
+            console.log('JSON data to be submitted:', jsonData);
+
+            const hiddenField = document.getElementById('availability-data');
+            if (!hiddenField) {
+                console.error('❌ Hidden field availability-data not found!');
+                return false;
+            }
+
+            hiddenField.value = jsonData;
+            console.log('✓ Successfully set hidden field value');
+            console.log('=== END COLLECTION ===');
+
+            return formData.length; // Return count (can be 0 for clearing availability)
+        }
+
+        function checkForEmptySlots() {
+            const availabilityDays = document.querySelectorAll('.availability-day');
+            const timeSlots = document.querySelectorAll('.time-slot');
+            const warning = document.getElementById('empty-slots-warning');
+
+            if (availabilityDays.length === 0 || timeSlots.length === 0) {
+                warning.style.display = 'block';
+                warning.innerHTML = `
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Note:</strong> Saving without any time slots will clear your availability for this organization.
+        `;
+            } else {
+                warning.style.display = 'none';
+            }
+        }
+
+        function toggleDay(dayIndex, type) {
+            const button = document.querySelector(`[data-day="${dayIndex}"][data-type="${type}"]`);
+
+            if (button.classList.contains('active')) {
+                removeDay(dayIndex);
+                button.classList.remove('active');
+            } else {
+                addDay(dayIndex, type);
+                button.classList.add('active');
+            }
+        }
+
+        function addDay(dayIndex, type) {
+            const dayName = dayNames[dayIndex];
+            const selectedDaysContainer = document.getElementById('selected-days');
+
+            if (document.getElementById(`day-${dayIndex}`)) {
+                console.log(`Day ${dayIndex} already exists`);
+                return;
+            }
+
+            console.log(`Adding day ${dayIndex} (${dayName})`);
+
+            const button = document.querySelector(`[data-day="${dayIndex}"][data-type="${type}"]`);
+            if (button) {
+                button.classList.add('active');
+            }
+
+            if (!availabilityData[dayIndex]) {
+                availabilityData[dayIndex] = [];
+            }
+
+            const dayHtml = `
+        <div class="card availability-day" id="day-${dayIndex}">
+            <div class="card-body">
+                <div class="day-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar-week me-2"></i>${dayName}
+                            <span class="badge bg-light text-dark ms-2">Weekly</span>
+                        </h5>
+                        <button type="button" class="btn btn-light btn-sm" onclick="removeDay(${dayIndex})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="time-slots-${dayIndex}" class="time-slots-container"></div>
+
+                <div class="add-time-slot" onclick="addTimeSlot(${dayIndex})">
+                    <i class="fas fa-plus me-2"></i>Add Time Slot
+                </div>
+            </div>
+        </div>
+    `;
+
+            selectedDaysContainer.insertAdjacentHTML('beforeend', dayHtml);
+
+            if (availabilityData[dayIndex] && availabilityData[dayIndex].length > 0) {
+                availabilityData[dayIndex].forEach(slot => {
+                    addTimeSlotToDOM(dayIndex, slot.start, slot.end, slot.availability_type);
+                });
+            } else {
+                addTimeSlot(dayIndex);
+            }
+
+            checkForEmptySlots();
+            console.log(`✓ Day ${dayIndex} added successfully`);
+        }
+
+        function removeDay(dayIndex) {
+            console.log(`Removing day ${dayIndex}`);
+
+            const dayElement = document.getElementById(`day-${dayIndex}`);
+            if (dayElement) {
+                dayElement.remove();
+            }
+
+            const button = document.querySelector(`[data-day="${dayIndex}"]`);
+            if (button) {
+                button.classList.remove('active');
+            }
+
+            delete availabilityData[dayIndex];
+            checkForEmptySlots();
+        }
+
+        function addTimeSlot(dayIndex) {
+            console.log(`Adding time slot to day ${dayIndex}`);
+            addTimeSlotToDOM(dayIndex, '09:00', '17:00', 'sure');
+            checkForEmptySlots();
+        }
+
+        function addTimeSlotToDOM(dayIndex, startTime = '09:00', endTime = '17:00', availabilityType = 'sure') {
+            const timeSlotsContainer = document.getElementById(`time-slots-${dayIndex}`);
+
+            if (!timeSlotsContainer) {
+                console.error(`Time slots container not found for day ${dayIndex}`);
+                return;
+            }
+
+            const timestamp = Date.now();
+            const random = Math.random().toString(36).substr(2, 5);
+            const slotId = `slot-${dayIndex}-${timestamp}-${random}`;
+
+            console.log(`Creating time slot with ID: ${slotId}`);
+
+            const timeSlotHtml = `
+        <div class="time-slot ${availabilityType}" id="${slotId}">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <label class="form-label small">Start Time</label>
+                    <input type="time" class="form-control form-control-sm time-start" value="${startTime}">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small">End Time</label>
+                    <input type="time" class="form-control form-control-sm time-end" value="${endTime}">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small">Availability</label>
+                    <select class="form-select form-select-sm availability-type" onchange="updateAvailabilityType(this, '${slotId}')">
+                        <option value="sure" ${availabilityType === 'sure' ? 'selected' : ''}>Sure (Green)</option>
+                        <option value="maybe" ${availabilityType === 'maybe' ? 'selected' : ''}>Maybe (Yellow)</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small">&nbsp;</label>
+                    <button type="button" class="btn btn-danger btn-sm w-100" onclick="removeTimeSlot('${slotId}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+            timeSlotsContainer.insertAdjacentHTML('beforeend', timeSlotHtml);
+            console.log(`✓ Time slot ${slotId} added to day ${dayIndex}`);
+        }
+
+        function removeTimeSlot(slotId) {
+            console.log(`Removing time slot: ${slotId}`);
+            const slotElement = document.getElementById(slotId);
+            if (slotElement) {
+                slotElement.remove();
+                console.log(`✓ Time slot ${slotId} removed`);
+                checkForEmptySlots();
+            }
+        }
+
+        function updateAvailabilityType(selectElement, slotId) {
+            const slotElement = document.getElementById(slotId);
+            const newType = selectElement.value;
+
+            if (slotElement) {
+                slotElement.classList.remove('sure', 'maybe');
+                slotElement.classList.add(newType);
+                console.log(`Updated slot ${slotId} to type: ${newType}`);
+            }
+        }
+    </script>
+{% endblock %}

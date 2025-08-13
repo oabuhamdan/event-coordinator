@@ -1,7 +1,6 @@
 from django import forms
 from django.utils import timezone
-from .models import Event, UserAvailability, EventResponse
-import json
+from .models import Event, EventResponse
 
 
 class EventForm(forms.ModelForm):
@@ -22,17 +21,6 @@ class EventForm(forms.ModelForm):
             raise forms.ValidationError("Event date and time must be in the future.")
         return date_time
 
-
-class UserAvailabilityForm(forms.Form):
-    # This form will be handled by JavaScript on the frontend
-    availability_data = forms.CharField(widget=forms.HiddenInput(), required=False)
-
-    def clean_availability_data(self):
-        data = self.cleaned_data.get('availability_data', '[]')
-        try:
-            return json.loads(data)
-        except json.JSONDecodeError:
-            raise forms.ValidationError("Invalid availability data")
 
 
 class EventResponseForm(forms.ModelForm):

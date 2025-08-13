@@ -3,16 +3,21 @@ from . import views
 
 app_name = 'organizations'
 
-
 urlpatterns = [
+    # Organization listing and management
     path('', views.list_organizations, name='list'),
     path('create/', views.create_profile, name='create_profile'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('edit/', views.edit_profile, name='edit_profile'),
     path('subscribers/', views.subscribers, name='subscribers'),
+    path('<int:organization_id>/subscriber-availability/', views.get_subscriber_availability,
+         name='subscriber_availability'),
     path('analytics/', views.availability_analytics, name='availability_analytics'),
-    path('<int:organization_id>/time-slot-details/', views.get_time_slot_details, name='time_slot_details'),
+
+    # Analytics endpoints
     path('<int:organization_id>/datetime-slot-details/', views.get_datetime_slot_details, name='datetime_slot_details'),
+
+    # Organization detail and subscription management
     path('<int:pk>/', views.organization_detail, name='detail'),
     path('<int:pk>/subscribe/', views.subscribe, name='subscribe'),
     path('<int:pk>/unsubscribe/', views.unsubscribe, name='unsubscribe'),

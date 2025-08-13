@@ -2,48 +2,118 @@
 
 {% block title %}Organizations - Event Coordinator{% endblock %}
 
+{% block extra_css %}
+<style>
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.org-card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    height: 100%;
+}
+
+.org-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+}
+
+.org-logo {
+    height: 200px;
+    object-fit: cover;
+}
+
+.org-placeholder {
+    height: 200px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-action {
+    border-radius: 10px;
+    font-weight: 500;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h2><i class="fas fa-building me-2"></i>Organizations</h2>
-        <p class="text-muted">Discover and subscribe to organizations that interest you.</p>
-    </div>
+<!-- Page Header -->
+<div class="page-header">
+    <i class="fas fa-building fa-4x mb-3"></i>
+    <h1 class="fw-bold mb-2">Organizations</h1>
+    <p class="lead mb-0">Discover and subscribe to organizations that interest you</p>
 </div>
 
 <div class="row">
     {% for organization in organizations %}
     <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card h-100">
+        <div class="org-card card">
             {% if organization.logo %}
-                <img src="{{ organization.logo.url }}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="{{ organization.name }}">
+                <img src="{{ organization.logo.url }}" class="card-img-top org-logo" alt="{{ organization.name }}">
             {% else %}
-                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                    <i class="fas fa-building fa-3x text-muted"></i>
+                <div class="card-img-top org-placeholder">
+                    <i class="fas fa-building fa-4x text-muted"></i>
                 </div>
             {% endif %}
             <div class="card-body">
-                <h5 class="card-title">{{ organization.name }}</h5>
-                <p class="card-text">{{ organization.description|truncatechars:100 }}</p>
+                <h5 class="card-title fw-bold">{{ organization.name }}</h5>
+                <p class="card-text text-muted">{{ organization.description|truncatechars:100 }}</p>
+
+                <!-- Organization Stats -->
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <small class="text-muted d-block">Subscribers</small>
+                        <strong class="text-primary">{{ organization.subscription_set.count }}</strong>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted d-block">Events</small>
+                        <strong class="text-success">{{ organization.event_set.count }}</strong>
+                    </div>
+                    <div class="col-4">
+                        <small class="text-muted d-block">Since</small>
+                        <strong class="text-info">{{ organization.created_at|date:"Y" }}</strong>
+                    </div>
+                </div>
+
                 {% if organization.website %}
                     <p class="card-text">
                         <small class="text-muted">
                             <i class="fas fa-globe me-1"></i>
-                            <a href="{{ organization.website }}" target="_blank">{{ organization.website }}</a>
+                            <a href="{{ organization.website }}" target="_blank" class="text-decoration-none">
+                                {{ organization.website|slice:":30" }}{% if organization.website|length > 30 %}...{% endif %}
+                            </a>
                         </small>
                     </p>
                 {% endif %}
             </div>
-            <div class="card-footer bg-transparent">
-                <a href="{% url 'organizations:detail' organization.pk %}" class="btn btn-primary">
-                    <i class="fas fa-eye me-1"></i>View Details
-                </a>
+            <div class="card-footer bg-transparent border-0">
+                <div class="d-grid">
+                    <a href="{% url 'organizations:detail' organization.pk %}" class="btn btn-primary btn-action">
+                        <i class="fas fa-eye me-2"></i>View Details
+                    </a>
+                </div>
             </div>
         </div>
     </div>
     {% empty %}
     <div class="col-12">
-        <div class="alert alert-info text-center">
-            <i class="fas fa-info-circle me-2"></i>No organizations found.
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-building fa-4x text-muted mb-3"></i>
+                <h4 class="text-muted">No Organizations Found</h4>
+                <p class="text-muted">There are no organizations available at the moment.</p>
+            </div>
         </div>
     </div>
     {% endfor %}

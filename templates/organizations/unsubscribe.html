@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Unsubscribe from {{ organization.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-times me-2"></i>Unsubscribe from {{ organization.name }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Are you sure?</strong> You will no longer receive notifications about events from {{ organization.name }}.
+                </div>
+
+                <div class="mb-4">
+                    <h6>What will happen:</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-times text-danger me-2"></i>You'll stop receiving event notifications</li>
+                        <li><i class="fas fa-times text-danger me-2"></i>Your availability schedule will be removed</li>
+                        <li><i class="fas fa-check text-success me-2"></i>You can re-subscribe anytime</li>
+                    </ul>
+                </div>
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-user-times me-2"></i>Yes, Unsubscribe
+                        </button>
+                        <a href="{% url 'organizations:detail' organization.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

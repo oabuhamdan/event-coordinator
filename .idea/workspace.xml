@@ -4,95 +4,70 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fa558091-df30-483e-8806-eee85d2677a0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.env.example" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/EventCoordinator.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Dockerfile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/EventCoordinator/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/EventCoordinator/celery.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/EventCoordinator/settings/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/EventCoordinator/settings/base.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/EventCoordinator/settings/dev.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/EventCoordinator/settings/prod.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/EventCoordinator/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/EventCoordinator/wsgi.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Makefile" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/accounts/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/accounts/admin.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/accounts/apps.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/accounts/forms.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/accounts/management/commands/setup_demo_data.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/accounts/migrations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/accounts/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/accounts/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/accounts/views.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker-compose.prod.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker-compose.yml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/admin.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/api_urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/api_views.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/apps.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/forms.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/migrations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/views.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/manage.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/nginx/nginx.conf" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notifications/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notifications/apps.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notifications/migrations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notifications/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notifications/tasks.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notifications/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/organizations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/organizations/admin.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/organizations/apps.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/organizations/forms.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/organizations/migrations/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/organizations/models.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/organizations/urls.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/organizations/views.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/start.sh" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/static/css/custom.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/accounts/profile.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/events/analytics.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/events/create.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/events/delete.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/events/detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/events/edit.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/events/list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/events/respond.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/events/set_anonymous_availability.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/events/set_availability.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/home.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/notifications/email/anonymous_event_notification.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/notifications/email/event_notification.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/organizations/anonymous_subscribe.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/organizations/availability_analytics.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/organizations/create_profile.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/organizations/dashboard.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/organizations/detail.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/organizations/edit_profile.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/organizations/list.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/organizations/subscribers.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/registration/login.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/registration/register_organization.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/registration/register_user.html" afterDir="false" />
+    <list default="true" id="fa558091-df30-483e-8806-eee85d2677a0" name="Changes" comment="init commit">
+      <change afterPath="$PROJECT_DIR$/accounts/services/availability_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/accounts/services/session_service.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/accounts/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/events/services.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/events/templatetags/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/events/templatetags/event_tags.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/events/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notifications/admin.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/notifications/utils.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/organizations/analytics.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/organizations/services.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/accounts/anonymous_profile.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/accounts/availability_form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/accounts/register.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/components/event_card.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/components/loading_spinner.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/components/user_badge.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/events/anonymous_email_form.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/organizations/subscribe.html" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/organizations/unsubscribe.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EventCoordinator/settings/dev.py" beforeDir="false" afterPath="$PROJECT_DIR$/EventCoordinator/settings/dev.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/events/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/events/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/events/api_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/events/api_views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/events/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/events/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/events/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/events/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/events/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/events/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/events/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/events/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notifications/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/notifications/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/notifications/tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notifications/tasks.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/organizations/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/organizations/forms.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/organizations/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/organizations/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/organizations/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/organizations/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/organizations/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/organizations/views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/events/analytics.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/analytics.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/events/create.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/create.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/events/delete.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/delete.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/events/detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/events/edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/edit.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/events/respond.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/respond.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/events/set_anonymous_availability.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/set_anonymous_availability.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/events/set_availability.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/set_availability.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/organizations/availability_analytics.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/organizations/availability_analytics.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/organizations/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/organizations/dashboard.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/organizations/detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/organizations/detail.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/organizations/list.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/organizations/list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/organizations/subscribers.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/organizations/subscribers.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/registration/register_organization.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/registration/register_organization.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/registration/register_user.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/registration/register_user.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="DjangoConsoleOptions" custom-start-script="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;import django; print('Django %s' % django.get_version())&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;if 'setup' in dir(django): django.setup()&#10;import django_manage_shell; django_manage_shell.run(PROJECT_ROOT)">
+    <option name="myCustomStartScript" value="import sys; print('Python %s on %s' % (sys.version, sys.platform))&#10;import django; print('Django %s' % django.get_version())&#10;sys.path.extend([WORKING_DIR_AND_PYTHON_PATHS])&#10;if 'setup' in dir(django): django.setup()&#10;import django_manage_shell; django_manage_shell.run(PROJECT_ROOT)" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -105,6 +80,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;oabuhamdan&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/oabuhamdan/event-coordinator.git&quot;,
+    &quot;accountId&quot;: &quot;b1fe77ba-69b1-4a9f-8cfb-e290c9efd951&quot;
+  }
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
 }</component>
@@ -122,16 +109,17 @@
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "master",
     "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "/home/osama/PycharmProjects/EventCoordinator/templates/events",
+    "last_opened_file_path": "/home/osama/PycharmProjects/EventCoordinator/templates/organizations",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm"
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "preferences.pluginManager"
   }
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/templates/events" />
       <recent name="$PROJECT_DIR$/templates/organizations" />
+      <recent name="$PROJECT_DIR$/templates/events" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/templates" />
       <recent name="$PROJECT_DIR$/EventCoordinator" />
@@ -182,11 +170,36 @@
       <option name="presentableId" value="Default" />
       <updated>1754856012186</updated>
       <workItem from="1754856013247" duration="1164000" />
-      <workItem from="1754857188075" duration="14204000" />
+      <workItem from="1754857188075" duration="26048000" />
+      <workItem from="1755000977665" duration="26021000" />
     </task>
+    <task id="LOCAL-00001" summary="init commit">
+      <option name="closed" value="true" />
+      <created>1754874736968</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1754874736968</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="init commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="init commit" />
   </component>
 </project>
