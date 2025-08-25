@@ -1,22 +1,19 @@
+# events/urls.py
 from django.urls import path
 from . import views
 
 app_name = 'events'
 
 urlpatterns = [
+    # Event management under organization (username is already in main URL)
     path('', views.list_events, name='list'),
     path('create/', views.create_event, name='create'),
-    path('<int:pk>/', views.event_detail, name='detail'),
-    path('<int:pk>/edit/', views.edit_event, name='edit'),
-    path('<int:pk>/delete/', views.delete_event, name='delete'),
-    path('<int:pk>/respond/', views.respond_to_event, name='respond'),
-    path('<int:pk>/analytics/', views.event_analytics, name='analytics'),
-    path('availability/<int:organization_id>/', views.set_availability, name='set_availability'),
-    path('availability/<int:organization_id>/<int:subscription_id>/anonymous/', views.set_anonymous_availability,
-         name='set_anonymous_availability'),
-    path('availability/<int:organization_id>/access/<str:token>/', views.anonymous_availability_access,
-         name='anonymous_availability_access'),
-    path('availability/<int:organization_id>/anonymous-email/', views.anonymous_availability_by_email,
-         name='anonymous_availability_by_email'),
-    path('subscribe-anonymous/<int:organization_id>/', views.subscribe_anonymous, name='subscribe_anonymous'),
+    path('<slug:slug>/', views.event_detail, name='detail'),
+    path('<slug:slug>/edit/', views.edit_event, name='edit'),
+    path('<slug:slug>/delete/', views.delete_event, name='delete'),
+    path('<slug:slug>/respond/', views.respond_to_event, name='respond'),
+    path('<slug:slug>/analytics/', views.event_analytics, name='analytics'),
+
+    # API endpoints
+    path('api/availability-slots/', views.get_availability_slots, name='api_availability_slots'),
 ]

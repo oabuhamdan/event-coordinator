@@ -116,14 +116,14 @@ def _handle_profile_update(request):
 
 @login_required
 @regular_user_required
-def set_availability(request, organization_id):
+def set_availability(request, username):
     """Set availability for a registered user."""
-    organization = get_object_or_404(Organization, id=organization_id)
+    organization = get_object_or_404(Organization, user__username=username)
 
     # Check subscription
     if not SubscriptionService.is_user_subscribed(request.user, organization):
         messages.error(request, 'You must be subscribed to set availability.')
-        return redirect('organizations:detail', pk=organization.pk)
+        return redirect('organizations:detail', username=organization.user.username)
 
     # Track session
     SessionService.track_session(request, request.user)
@@ -134,15 +134,15 @@ def set_availability(request, organization_id):
     return _render_availability_form(request, organization, user=request.user)
 
 
-def set_anonymous_availability(request, organization_id):
+def set_anonymous_availability(request, username):
     """Set availability for an anonymous user."""
-    organization = get_object_or_404(Organization, id=organization_id)
+    organization = get_object_or_404(Organization, user__username=username)
 
     # Get anonymous subscription
     anonymous_subscription = _get_anonymous_subscription(request, organization)
     if not anonymous_subscription:
         messages.error(request, 'No subscription found. Please subscribe first.')
-        return redirect('organizations:detail', pk=organization.pk)
+        return redirect('organizations:detail', username=organization.user.username)
 
     # Track session
     SessionService.track_session(request)
@@ -235,14 +235,14 @@ def _render_availability_form(request, organization, user=None, anonymous_subscr
 
     return render(request, 'accounts/availability_form.html', context)
 
-def anonymous_profile(request, organization_id):
+def anonymous_profile(request, username):
     """Anonymous user profile management."""
-    organization = get_object_or_404(Organization, id=organization_id)
+    organization = get_object_or_404(Organization, user__username=username)
 
     anonymous_subscription = _get_anonymous_subscription(request, organization)
     if not anonymous_subscription:
         messages.error(request, 'No subscription found.')
-        return redirect('organizations:detail', pk=organization.pk)
+        return redirect('organizations:detail', username=organization.user.username)
 
     if request.method == 'POST':
         if 'unsubscribe' in request.POST:
@@ -275,7 +275,7 @@ def _handle_anonymous_unsubscribe(request, organization, anonymous_subscription)
     anonymous_subscription.delete()
     del request.session[f'anonymous_subscription_{organization.pk}']
     messages.success(request, f'You have been unsubscribed from {organization.name}.')
-    return redirect('organizations:detail', pk=organization.pk)
+    return redirect('organizations:detail', username=organization.user.username)
 
 
 def _handle_anonymous_profile_update(request, organization, anonymous_subscription):
@@ -289,14 +289,14 @@ def _handle_anonymous_profile_update(request, organization, anonymous_subscripti
     anonymous_subscription.save()
 
     messages.success(request, 'Your profile has been updated successfully!')
-    return redirect('accounts:anonymous_profile', organization_id=organization.pk)
+    return redirect('accounts:anonymous_profile', username=organization.user.username)
 
 
 @login_required
 @regular_user_required
-def get_availability(request, organization_id):
+def get_availability(request, username):
     """Get user's availability for an organization (API endpoint)."""
-    organization = get_object_or_404(Organization, id=organization_id)
+    organization = get_object_or_404(Organization, user__username=username)
 
     availability = AvailabilityService.get_user_availability(
         user=request.user, organization=organization

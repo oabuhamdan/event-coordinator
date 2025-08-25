@@ -210,12 +210,12 @@
                                     <i class="fas fa-save me-2"></i>Save Availability
                                 </button>
                                 {% if user_type == 'registered' %}
-                                    <a href="{% url 'organizations:detail' pk=organization.pk %}"
+                                    <a href="{% url 'organizations:detail' username=organization.user.username %}"
                                        class="btn btn-outline-secondary">
                                         <i class="fas fa-arrow-left me-2"></i>Back to Organization
                                     </a>
                                 {% else %}
-                                    <a href="{% url 'accounts:anonymous_profile' organization_id=organization.pk %}"
+                                    <a href="{% url 'accounts:anonymous_profile' username=organization.user.username %}"
                                        class="btn btn-outline-secondary">
                                         <i class="fas fa-arrow-left me-2"></i>Back to Profile
                                     </a>

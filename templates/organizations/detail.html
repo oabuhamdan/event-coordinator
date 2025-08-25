@@ -3,375 +3,363 @@
 {% block title %}{{ organization.name }} - Event Coordinator{% endblock %}
 
 {% block extra_css %}
-<style>
-.organization-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 15px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-}
+    <style>
+        .organization-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
 
-.organization-header::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    z-index: 1;
-}
+        .organization-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            z-index: 1;
+        }
 
-.organization-content {
-    position: relative;
-    z-index: 2;
-}
+        .organization-content {
+            position: relative;
+            z-index: 2;
+        }
 
-.sidebar-card {
-    border: none;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 15px;
-    margin-bottom: 1rem;
-    transition: transform 0.3s ease;
-}
+        .sidebar-card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+            margin-bottom: 1rem;
+            transition: transform 0.3s ease;
+        }
 
-.sidebar-card:hover {
-    transform: translateY(-2px);
-}
+        .sidebar-card:hover {
+            transform: translateY(-2px);
+        }
 
-.action-btn {
-    width: 100%;
-    margin-bottom: 0.5rem;
-    border-radius: 10px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
+        .action-btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+            border-radius: 10px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
 
-.subscriber-info {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border-radius: 10px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-}
+        .subscriber-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
 
-.subscription-badge {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    z-index: 3;
-}
+        .subscription-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            z-index: 3;
+        }
 
-.event-card {
-    border: none;
-    border-radius: 10px;
-    transition: transform 0.3s ease;
-    margin-bottom: 1rem;
-}
+        .event-card {
+            border: none;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+            margin-bottom: 1rem;
+        }
 
-.event-card:hover {
-    transform: translateY(-2px);
-}
+        .event-card:hover {
+            transform: translateY(-2px);
+        }
 
-.quick-actions .btn {
-    border-radius: 8px;
-    font-size: 0.9rem;
-    padding: 0.5rem 1rem;
-}
-</style>
+        .quick-actions .btn {
+            border-radius: 8px;
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <!-- Main Content -->
-    <div class="col-lg-8">
-        <!-- Organization Header -->
-        <div class="organization-header">
-            <div class="organization-content">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h1 class="mb-2">
-                            <i class="fas fa-building me-2"></i>{{ organization.name }}
-                        </h1>
-                        {% if organization.description %}
-                            <p class="mb-3 opacity-75">{{ organization.description }}</p>
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            <!-- Organization Header -->
+            <div class="organization-header">
+                <div class="organization-content">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h1 class="mb-2">
+                                <i class="fas fa-building me-2"></i>{{ organization.name }}
+                            </h1>
+                            {% if organization.description %}
+                                <p class="mb-3 opacity-75">{{ organization.description }}</p>
+                            {% endif %}
+                            {% if organization.website %}
+                                <a href="{{ organization.website }}" target="_blank" class="btn btn-light btn-sm">
+                                    <i class="fas fa-external-link-alt me-1"></i>Visit Website
+                                </a>
+                            {% endif %}
+                        </div>
+                        {% if organization.logo %}
+                            <img src="{{ organization.logo.url }}" alt="{{ organization.name }}"
+                                 class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
                         {% endif %}
-                        {% if organization.website %}
-                            <a href="{{ organization.website }}" target="_blank" class="btn btn-light btn-sm">
-                                <i class="fas fa-external-link-alt me-1"></i>Visit Website
+                    </div>
+                </div>
+
+                <!-- Subscription Status Badge -->
+                {% if is_subscribed %}
+                    <span class="badge bg-success subscription-badge">
+                    <i class="fas fa-check-circle me-1"></i>Subscribed
+                </span>
+                {% endif %}
+            </div>
+
+            <!-- Upcoming Events -->
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-calendar-alt me-2"></i>Upcoming Events</h5>
+                </div>
+                <div class="card-body">
+                    {% if upcoming_events %}
+                        <div class="row">
+                            {% for event in upcoming_events %}
+                                <div class="d-flex align-items-center border-bottom py-3">
+                                    <div class="flex-shrink-0 me-3">
+                                        <i class="fas fa-calendar-check fa-2x text-success"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ event.title }}</h6>
+                                        <small class="text-muted">{{ event.description|truncatechars:50 }}</small>
+                                        <p class="text-muted mb-1">{{ event.start_datetime }}
+                                            - {{ event.end_datetime }}</p>
+                                    </div>
+                                    <div class="flex-shrink-0">
+                                        <a href="{% url 'events:detail' username=event.organization.user.username slug=event.slug %}"
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No upcoming events scheduled.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            {% if not is_subscribed %}
+                <!-- Subscribe Section -->
+                <div class="card sidebar-card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Get Notified</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted">Subscribe to receive notifications about events from this
+                            organization.</p>
+
+                        {% if user_type == 'registered' %}
+                            <a href="{% url 'organizations:subscribe' username=organization.user.username %}"
+                               class="btn btn-primary action-btn">
+                                <i class="fas fa-user-plus me-2"></i>Subscribe
+                            </a>
+                        {% else %}
+                            <a href="{% url 'organizations:anonymous_subscribe' username=organization.user.username %}"
+                               class="btn btn-primary action-btn">
+                                <i class="fas fa-user-plus me-2"></i>Subscribe
                             </a>
                         {% endif %}
                     </div>
-                    {% if organization.logo %}
-                        <img src="{{ organization.logo.url }}" alt="{{ organization.name }}"
-                             class="rounded-circle" style="width: 80px; height: 80px; object-fit: cover;">
-                    {% endif %}
                 </div>
-            </div>
-
-            <!-- Subscription Status Badge -->
-            {% if is_subscribed %}
-                <span class="badge bg-success subscription-badge">
-                    <i class="fas fa-check-circle me-1"></i>Subscribed
-                </span>
-            {% endif %}
-        </div>
-
-        <!-- Upcoming Events -->
-        <div class="card">
-            <div class="card-header">
-                <h5><i class="fas fa-calendar-alt me-2"></i>Upcoming Events</h5>
-            </div>
-            <div class="card-body">
-                {% if upcoming_events %}
-                    <div class="row">
-                        {% for event in upcoming_events %}
-                            <div class="col-md-6 mb-3">
-                                <div class="card event-card">
-                                    <div class="card-body">
-                                        <h6 class="card-title">{{ event.title }}</h6>
-                                        <p class="card-text small text-muted">{{ event.description|truncatewords:15 }}</p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <small class="text-muted">
-                                                <i class="fas fa-clock me-1"></i>{{ event.date_time|date:"M d, Y - g:i A" }}
-                                            </small>
-                                            {% if event.location %}
-                                                <small class="text-muted">
-                                                    <i class="fas fa-map-marker-alt me-1"></i>{{ event.location|truncatewords:3 }}
-                                                </small>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
+            {% else %}
+                <!-- Subscription Management -->
+                <div class="card sidebar-card">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-user-check me-2"></i>Subscription Management</h5>
                     </div>
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">No upcoming events scheduled.</p>
-                    </div>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+                    <div class="card-body">
+                        <!-- Manage Availability -->
+                        {% if user_type == 'registered' %}
+                            <a href="{% url 'accounts:set_availability' organization.user.username %}"
+                               class="btn btn-primary action-btn">
+                                <i class="fas fa-calendar-alt me-2"></i>Manage Availability
+                            </a>
+                        {% else %}
+                            <a href="{% url 'accounts:set_anonymous_availability' organization.user.username %}"
+                               class="btn btn-primary action-btn">
+                                <i class="fas fa-calendar-alt me-2"></i>Manage Availability
+                            </a>
+                        {% endif %}
 
-    <!-- Sidebar -->
-    <div class="col-lg-4">
-        {% if not is_subscribed %}
-            <!-- Subscribe Section -->
-            <div class="card sidebar-card">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Get Notified</h5>
-                </div>
-                <div class="card-body">
-                    <p class="text-muted">Subscribe to receive notifications about events from this organization.</p>
+                        <button class="btn btn-outline-info action-btn" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#subscription-details">
+                            <i class="fas fa-info-circle me-2"></i>Subscription Details
+                        </button>
 
-                    {% if user_type == 'registered' %}
-                        <a href="{% url 'organizations:subscribe' pk=organization.pk %}" class="btn btn-primary action-btn">
-                            <i class="fas fa-user-plus me-2"></i>Subscribe
-                        </a>
-                    {% else %}
-                        <!-- Anonymous Subscription Form -->
-                        <form method="post" action="{% url 'organizations:anonymous_subscribe' pk=organization.pk %}">
-                            {% csrf_token %}
-                            <div class="mb-3">
-                                <input type="text" class="form-control" name="name" placeholder="Your Name" required>
-                            </div>
-                            <div class="mb-3">
-                                <input type="email" class="form-control" name="email" placeholder="Your Email" required>
-                            </div>
-                            <div class="mb-3">
-                                <input type="tel" class="form-control" name="phone_number" placeholder="Phone Number (Optional)">
-                            </div>
-                            <div class="mb-3">
-                                <select class="form-select" name="notification_preference">
-                                    <option value="all">All Events</option>
-                                    <option value="matching">Only Matching My Schedule</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary action-btn">
-                                <i class="fas fa-bell me-2"></i>Subscribe
-                            </button>
-                        </form>
-                    {% endif %}
-                </div>
-            </div>
-        {% else %}
-            <!-- Subscription Management -->
-            <div class="card sidebar-card">
-                <div class="card-header bg-success text-white">
-                    <h5 class="mb-0"><i class="fas fa-user-check me-2"></i>Subscription Management</h5>
-                </div>
-                <div class="card-body">
-                    <!-- Manage Availability -->
-                    {% if user_type == 'registered' %}
-                        <a href="{% url 'accounts:set_availability' organization_id=organization.pk %}"
-                           class="btn btn-primary action-btn">
-                            <i class="fas fa-calendar-alt me-2"></i>Manage Availability
-                        </a>
-                    {% else %}
-                        <a href="{% url 'accounts:set_anonymous_availability' organization_id=organization.pk %}"
-                           class="btn btn-primary action-btn">
-                            <i class="fas fa-calendar-alt me-2"></i>Manage Availability
-                        </a>
-                    {% endif %}
-
-                    <!-- Subscription Details -->
-                    <button class="btn btn-outline-info action-btn" type="button" data-bs-toggle="collapse"
-                            data-bs-target="#subscription-details">
-                        <i class="fas fa-info-circle me-2"></i>Subscription Details
-                    </button>
-
-                    <div class="collapse" id="subscription-details">
-                        <div class="subscriber-info mt-2">
-                            {% if subscriber_info %}
-                                <div class="row g-2">
-                                    <div class="col-12">
-                                        <strong><i class="fas fa-user me-1"></i>Name:</strong> {{ subscriber_info.name }}
-                                    </div>
-                                    <div class="col-12">
-                                        <strong><i class="fas fa-envelope me-1"></i>Email:</strong> {{ subscriber_info.email }}
-                                    </div>
-                                    {% if subscriber_info.phone_number %}
+                        <div class="collapse" id="subscription-details">
+                            <div class="subscriber-info mt-2">
+                                {% if subscriber_info %}
+                                    <div class="row g-2">
                                         <div class="col-12">
-                                            <strong><i class="fas fa-phone me-1"></i>Phone:</strong> {{ subscriber_info.phone_number }}
+                                            <strong><i
+                                                    class="fas fa-user me-1"></i>Name:</strong> {{ subscriber_info.name }}
                                         </div>
-                                    {% endif %}
-                                    {% if subscriber_info.whatsapp_number %}
                                         <div class="col-12">
-                                            <strong><i class="fab fa-whatsapp me-1"></i>WhatsApp:</strong> {{ subscriber_info.whatsapp_number }}
+                                            <strong><i
+                                                    class="fas fa-envelope me-1"></i>Email:</strong> {{ subscriber_info.email }}
                                         </div>
-                                    {% endif %}
-                                    <div class="col-12">
-                                        <strong><i class="fas fa-bell me-1"></i>Notifications:</strong>
-                                        <span class="badge bg-secondary">{{ subscriber_info.notification_preference|capfirst }}</span>
-                                    </div>
-                                    <div class="col-12">
-                                        <strong><i class="fas fa-tag me-1"></i>Type:</strong>
-                                        <span class="badge {% if subscriber_info.user_type == 'registered' %}bg-primary{% else %}bg-warning{% endif %}">
+                                        {% if subscriber_info.phone_number %}
+                                            <div class="col-12">
+                                                <strong><i
+                                                        class="fas fa-phone me-1"></i>Phone:</strong> {{ subscriber_info.phone_number }}
+                                            </div>
+                                        {% endif %}
+                                        {% if subscriber_info.whatsapp_number %}
+                                            <div class="col-12">
+                                                <strong><i
+                                                        class="fab fa-whatsapp me-1"></i>WhatsApp:</strong> {{ subscriber_info.whatsapp_number }}
+                                            </div>
+                                        {% endif %}
+                                        <div class="col-12">
+                                            <strong><i class="fas fa-bell me-1"></i>Notifications:</strong>
+                                            <span class="badge bg-secondary">{{ subscriber_info.notification_preference|capfirst }}</span>
+                                        </div>
+                                        <div class="col-12">
+                                            <strong><i class="fas fa-tag me-1"></i>Type:</strong>
+                                            <span class="badge {% if subscriber_info.user_type == 'registered' %}bg-primary{% else %}bg-warning{% endif %}">
                                             {{ subscriber_info.user_type|capfirst }}
                                         </span>
+                                        </div>
                                     </div>
-                                </div>
-                            {% endif %}
+                                {% endif %}
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Unsubscribe -->
-                    {% if user_type == 'registered' %}
-                        <a href="{% url 'organizations:unsubscribe' pk=organization.pk %}"
-                           class="btn btn-outline-danger action-btn">
-                            <i class="fas fa-user-times me-2"></i>Unsubscribe
-                        </a>
-                    {% else %}
-                        <a href="{% url 'accounts:anonymous_profile' organization_id=organization.pk %}"
-                           class="btn btn-outline-danger action-btn">
-                            <i class="fas fa-user-times me-2"></i>Manage Profile
-                        </a>
-                    {% endif %}
+                        <!-- Unsubscribe -->
+                        {% if user_type == 'registered' %}
+                            <a href="{% url 'organizations:unsubscribe' username=organization.user.username %}"
+                               class="btn btn-outline-danger action-btn">
+                                <i class="fas fa-user-times me-2"></i>Unsubscribe
+                            </a>
+                        {% else %}
+                            <a href="{% url 'accounts:anonymous_profile' organization.user.username %}"
+                               class="btn btn-outline-success action-btn">
+                                <i class="fas fa-user-circle me-2"></i>Manage Profile
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Quick Actions -->
+            <div class="card sidebar-card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body quick-actions">
+                    <button class="btn btn-outline-secondary action-btn" onclick="shareOrganization()">
+                        <i class="fas fa-share-alt me-2"></i>Share Organization
+                    </button>
+
+                    <a href="{% url 'organizations:list' %}" class="btn btn-outline-info action-btn">
+                        <i class="fas fa-building me-2"></i>Browse Organizations
+                    </a>
                 </div>
             </div>
-        {% endif %}
 
-        <!-- Quick Actions -->
-        <div class="card sidebar-card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
-            </div>
-            <div class="card-body quick-actions">
-                <button class="btn btn-outline-secondary action-btn" onclick="shareOrganization()">
-                    <i class="fas fa-share-alt me-2"></i>Share Organization
-                </button>
-
-                <a href="{% url 'organizations:list' %}" class="btn btn-outline-info action-btn">
-                    <i class="fas fa-building me-2"></i>Browse Organizations
-                </a>
-            </div>
-        </div>
-
-        <!-- Organization Stats -->
-        <div class="card sidebar-card">
-            <div class="card-header">
-                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Organization Stats</h5>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6">
-                        <div class="border-end">
-                            <h4 class="text-primary mb-0">{{ upcoming_events|length }}</h4>
-                            <small class="text-muted">Upcoming Events</small>
+            <!-- Organization Stats -->
+            <div class="card sidebar-card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Organization Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-primary mb-0">{{ upcoming_events|length }}</h4>
+                                <small class="text-muted">Upcoming Events</small>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-6">
-                        <h4 class="text-success mb-0">
-                            {% if is_subscribed %}1{% else %}0{% endif %}
-                        </h4>
-                        <small class="text-muted">Your Status</small>
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h4 class="text-secondary mb-0">{{ past_events_count }}</h4>
+                                <small class="text-muted">Past Events</small>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-function shareOrganization() {
-    if (navigator.share) {
-        navigator.share({
-            title: '{{ organization.name }}',
-            text: '{{ organization.description|default:"Check out this organization!" }}',
-            url: window.location.href
-        });
-    } else {
-        // Fallback: Copy to clipboard
-        navigator.clipboard.writeText(window.location.href).then(() => {
-            alert('Organization link copied to clipboard!');
-        });
-    }
-}
+    <script>
 
-// Handle anonymous subscription form with AJAX
-document.addEventListener('DOMContentLoaded', function() {
-    const forms = document.querySelectorAll('form[action*="anonymous_subscribe"]');
-    forms.forEach(form => {
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
+        function shareOrganization() {
+            if (navigator.share) {
+                navigator.share({
+                    title: '{{ organization.name }}',
+                    text: '{{ organization.description|default:"Check out this organization!" }}',
+                    url: window.location.href
+                });
+            } else {
+                // Fallback: Copy to clipboard
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('Organization link copied to clipboard!');
+                });
+            }
+        }
 
-            const formData = new FormData(this);
-            const button = this.querySelector('button[type="submit"]');
-            const originalText = button.innerHTML;
+        // Handle anonymous subscription form with AJAX
+        document.addEventListener('DOMContentLoaded', function () {
+            const forms = document.querySelectorAll('form[action*="anonymous_subscribe"]');
+            forms.forEach(form => {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
 
-            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Subscribing...';
-            button.disabled = true;
+                    const formData = new FormData(this);
+                    const button = this.querySelector('button[type="submit"]');
+                    const originalText = button.innerHTML;
 
-            fetch(this.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert('Error: ' + (data.error || 'Failed to subscribe'));
-                    button.innerHTML = originalText;
-                    button.disabled = false;
-                }
-            })
-            .catch(error => {
-                alert('Error: Failed to subscribe');
-                button.innerHTML = originalText;
-                button.disabled = false;
+                    button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Subscribing...';
+                    button.disabled = true;
+
+                    fetch(this.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                        }
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                window.location.reload();
+                            } else {
+                                alert('Error: ' + (data.error || 'Failed to subscribe'));
+                                button.innerHTML = originalText;
+                                button.disabled = false;
+                            }
+                        })
+                        .catch(error => {
+                            alert('Error: Failed to subscribe');
+                            button.innerHTML = originalText;
+                            button.disabled = false;
+                        });
+                });
             });
         });
-    });
-});
-</script>
+    </script>
 {% endblock %}

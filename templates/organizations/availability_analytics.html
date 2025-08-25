@@ -299,7 +299,7 @@
             const startDate = document.getElementById('start_date').value;
             const endDate = document.getElementById('end_date').value;
 
-            fetch(`/organizations/{{ organization.id }}/datetime-slot-details/?datetime_slot=${datetimeSlot}&start_date=${startDate}&end_date=${endDate}`)
+            fetch(`/organizations/{{ organization.user.username }}/datetime-slot-details/?datetime_slot=${datetimeSlot}&start_date=${startDate}&end_date=${endDate}`)
                 .then(response => response.json())
                 .then(data => {
                     const parts = data.datetime_slot.split(' ');

@@ -22,47 +22,38 @@
         </div>
         
         <div class="content">
-            <p>Hi {{ user.username }},</p>
-            
-            <p>{{ organization.name }} has scheduled a new event that might interest you:</p>
-            
+            <p>Hi {{ recipient_name }},</p>
+
+            <p>{{ organization.name }} has scheduled a new event:</p>
+
             <div class="event-details">
                 <h2>{{ event.title }}</h2>
-                
-                <p><strong>📅 Date & Time:</strong> {{ event.date_time|date:"F j, Y" }} at {{ event.date_time|time:"g:i A" }}</p>
-                
+
+                <p><strong>📅 Start:</strong> {{ event.start_datetime|date:"F j, Y" }} at {{ event.start_datetime|time:"g:i A" }}</p>
+                <p><strong>📅 End:</strong> {{ event.end_datetime|date:"F j, Y" }} at {{ event.end_datetime|time:"g:i A" }}</p>
+
                 {% if event.location %}
                 <p><strong>📍 Location:</strong> {{ event.location }}</p>
                 {% endif %}
-                
-                <p><strong>⏰ Duration:</strong> {{ event.duration_hours }} hours</p>
-                
+
                 {% if event.description %}
                 <p><strong>📝 Description:</strong></p>
                 <p>{{ event.description }}</p>
                 {% endif %}
-                
-                {% if event.max_participants %}
-                <p><strong>👥 Max Participants:</strong> {{ event.max_participants }}</p>
-                {% endif %}
             </div>
-            
+
             <div style="text-align: center; margin: 30px 0;">
                 <a href="{{ event_url }}" class="btn">View Event Details</a>
                 <a href="{{ respond_url }}" class="btn">Respond to Event</a>
             </div>
-            
-            <p>You're receiving this notification because you're subscribed to {{ organization.name }}. 
-            {% if event.matches_user_availability %}
-                This event matches your availability preferences! ✅
-            {% endif %}
-            </p>
+
+            <p>You're receiving this notification because you're subscribed to {{ organization.name }}.</p>
         </div>
-        
+
         <div class="footer">
             <p>
                 <a href="{{ unsubscribe_url }}">Unsubscribe</a> from {{ organization.name }}<br>
-                Event Coordinator - Making event planning easier
+                Congruo - Making event planning easier
             </p>
         </div>
     </div>

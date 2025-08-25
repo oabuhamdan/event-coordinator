@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'crispy_bootstrap5',
     'recurrence',
+    'hcaptcha',
     'accounts',
     'organizations',
     'events',
@@ -84,7 +85,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Chicago'
 USE_I18N = True
 USE_TZ = True
 
@@ -129,7 +130,7 @@ EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='')
 
 # Twilio Configuration
 TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID', default='')
@@ -139,6 +140,10 @@ TWILIO_WHATSAPP_NUMBER = config('TWILIO_WHATSAPP_NUMBER', default='')
 
 # Site URL for notifications
 SITE_URL = config('SITE_URL', default='http://localhost:8000')
+
+# hCaptcha Configuration
+HCAPTCHA_SITEKEY = config('HCAPTCHA_SITEKEY', default='')
+HCAPTCHA_SECRET = config('HCAPTCHA_SECRET', default='')
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = False

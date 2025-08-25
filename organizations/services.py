@@ -1,3 +1,4 @@
+# organizations/services.py
 """
 Organization-related business logic services.
 Following Single Responsibility Principle for clean separation of concerns.
@@ -147,8 +148,8 @@ class OrganizationQueryService:
         """Get organization with upcoming events."""
         upcoming_events = Event.objects.filter(
             organization=organization,
-            date_time__gte=timezone.now()
-        ).order_by('date_time')[:limit]
+            start_datetime__gte=timezone.now()  # FIXED: was date_time
+        ).order_by('start_datetime')[:limit]  # FIXED: was date_time
         
         return {
             'organization': organization,
@@ -175,7 +176,7 @@ class OrganizationAnalyticsService:
         total_events = Event.objects.filter(organization=organization).count()
         upcoming_events = Event.objects.filter(
             organization=organization,
-            date_time__gte=timezone.now()
+            start_datetime__gte=timezone.now()  # FIXED: was date_time
         ).count()
 
         recent_events = Event.objects.filter(organization=organization).order_by('-created_at')[:5]

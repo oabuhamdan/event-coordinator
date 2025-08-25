@@ -1,13 +1,14 @@
+# accounts/services/availability_service.py
 """
 Availability service for handling user availability operations.
 """
-from django.db import transaction
-from django.core.exceptions import ValidationError
 from datetime import datetime
-from typing import List, Dict, Optional, Union
+from typing import List, Dict
+
+from django.core.exceptions import ValidationError
+from django.db import transaction
 
 from ..models import UserAvailability
-from organizations.models import Organization, AnonymousSubscription
 
 
 class AvailabilityService:
@@ -20,12 +21,12 @@ class AvailabilityService:
             return UserAvailability.objects.filter(
                 user=user,
                 organization=organization
-            ).order_by('recurrence_type', 'day_of_week', 'day_of_month')
+            ).order_by('recurrence_type', 'day_of_week')
         elif anonymous_subscription:
             return UserAvailability.objects.filter(
                 anonymous_subscription=anonymous_subscription,
                 organization=organization
-            ).order_by('recurrence_type', 'day_of_week', 'day_of_month')
+            ).order_by('recurrence_type', 'day_of_week')
         return UserAvailability.objects.none()
 
     @staticmethod
@@ -74,7 +75,7 @@ class AvailabilityService:
                     organization=organization,
                     recurrence_type=item.get('recurrence_type', 'weekly'),
                     day_of_week=item.get('day_of_week'),
-                    day_of_month=item.get('day_of_month'),
+                    day_of_month=None,  # Always None since monthly is removed
                     specific_date=specific_date,
                     time_slots=item.get('time_slots', []),
                     availability_type=item.get('availability_type', 'sure')
@@ -110,9 +111,129 @@ class AvailabilityService:
                 'id': avail.id,
                 'recurrence_type': avail.recurrence_type,
                 'day_of_week': avail.day_of_week,
-                'day_of_month': avail.day_of_month,
                 'specific_date': avail.specific_date.isoformat() if avail.specific_date else None,
                 'time_slots': avail.time_slots,
                 'availability_type': avail.availability_type,
             })
         return data
+
+    @staticmethod
+    def user_matches_event(user, event):
+        """Check if a user's availability matches an event's date and time."""
+        try:
+            # Get user's availability for this organization
+            availabilities = UserAvailability.objects.filter(
+                user=user,
+                organization=event.organization
+            )
+            
+            return AvailabilityService._check_event_match(availabilities, event)
+        except Exception as e:
+            print(f"Error checking user availability match: {e}")
+            return False
+
+    @staticmethod
+    def anonymous_matches_event(anonymous_subscription, event):
+        """Check if an anonymous subscription's availability matches an event's date and time."""
+        try:
+            # Get anonymous subscription's availability for this organization
+            availabilities = UserAvailability.objects.filter(
+                anonymous_subscription=anonymous_subscription,
+                organization=event.organization
+            )
+            
+            return AvailabilityService._check_event_match(availabilities, event)
+        except Exception as e:
+            print(f"Error checking anonymous availability match: {e}")
+            return False
+
+    @staticmethod
+    def _check_event_match(availabilities, event):
+        """Check if any availability record matches the event time."""
+        if not availabilities.exists():
+            return False
+
+        event_date = event.start_datetime.date()
+        event_start_time = event.start_datetime.time()
+        event_end_time = event.end_datetime.time() if event.end_datetime else event_start_time
+
+        for availability in availabilities:
+            # Check if this availability applies to the event date
+            if availability.recurrence_type == 'weekly':
+                # Check if event day matches availability day of week
+                if event_date.weekday() != availability.day_of_week:
+                    continue
+            elif availability.recurrence_type == 'specific_date':
+                # Check if event date matches specific date
+                if event_date != availability.specific_date:
+                    continue
+            else:
+                # Skip any other recurrence types (shouldn't exist)
+                continue
+
+            # Check if event time overlaps with any of the availability time slots
+            for time_slot in availability.time_slots:
+                try:
+                    slot_start = datetime.strptime(time_slot['start'], '%H:%M').time()
+                    slot_end = datetime.strptime(time_slot['end'], '%H:%M').time()
+                    
+                    # Check if event time overlaps with this time slot
+                    if AvailabilityService._times_overlap(
+                        event_start_time, event_end_time,
+                        slot_start, slot_end
+                    ):
+                        return True
+                except (KeyError, ValueError, TypeError):
+                    # Skip invalid time slots
+                    continue
+
+        return False
+
+    @staticmethod
+    def _times_overlap(start1, end1, start2, end2):
+        """Check if two time ranges overlap."""
+        # Convert times to minutes for easier comparison
+        def time_to_minutes(t):
+            return t.hour * 60 + t.minute
+
+        start1_min = time_to_minutes(start1)
+        end1_min = time_to_minutes(end1)
+        start2_min = time_to_minutes(start2)
+        end2_min = time_to_minutes(end2)
+
+        # Check for overlap: ranges overlap if start1 < end2 and start2 < end1
+        return start1_min < end2_min and start2_min < end1_min
+
+    @staticmethod
+    def get_matching_subscribers(organization, event):
+        """Get all subscribers whose availability matches the event."""
+        matching_users = []
+        matching_anonymous = []
+
+        # Check regular subscribers
+        from organizations.models import Subscription
+        subscriptions = Subscription.objects.filter(organization=organization).select_related('user')
+        
+        for subscription in subscriptions:
+            if subscription.notification_preference == 'matching':
+                if AvailabilityService.user_matches_event(subscription.user, event):
+                    matching_users.append(subscription.user)
+            elif subscription.notification_preference == 'all':
+                matching_users.append(subscription.user)
+
+        # Check anonymous subscribers
+        from organizations.models import AnonymousSubscription
+        anon_subscriptions = AnonymousSubscription.objects.filter(organization=organization)
+        
+        for anon_sub in anon_subscriptions:
+            if anon_sub.notification_preference == 'matching':
+                if AvailabilityService.anonymous_matches_event(anon_sub, event):
+                    matching_anonymous.append(anon_sub)
+            elif anon_sub.notification_preference == 'all':
+                matching_anonymous.append(anon_sub)
+
+        return {
+            'users': matching_users,
+            'anonymous': matching_anonymous,
+            'total_count': len(matching_users) + len(matching_anonymous)
+        }

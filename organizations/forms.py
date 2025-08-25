@@ -1,32 +1,48 @@
 from django import forms
-from .models import Organization, Subscription, AnonymousSubscription
+from hcaptcha.fields import hCaptchaField
+from .models import Organization, Subscription, AnonymousSubscription, NotificationPreference
 
 
 class OrganizationForm(forms.ModelForm):
     class Meta:
         model = Organization
         fields = [
-            'name', 'description', 'website', 'logo', 'notification_type',
-            'smtp_host', 'smtp_port', 'smtp_username', 'smtp_password',
-            'twilio_account_sid', 'twilio_auth_token', 'twilio_phone_number', 'twilio_whatsapp_number'
+            'name',
+            'description',
+            'website',
+            'logo',
+            'contact_email',
+            'contact_phone',
         ]
         widgets = {
             'description': forms.Textarea(attrs={'rows': 4}),
-            'smtp_password': forms.PasswordInput(),
-            'twilio_auth_token': forms.PasswordInput(),
+        }
+
+
+class NotificationPreferenceForm(forms.ModelForm):
+    class Meta:
+        model = NotificationPreference
+        fields = [
+            'via_email',
+            'via_sms',
+            'via_whatsapp',
+            'daily_email_limit',  # shown but disabled
+            'monthly_email_limit',  # shown but disabled
+            'twilio_account_sid',
+            'twilio_auth_token',
+            'twilio_phone_number',
+            'twilio_whatsapp_number',
+        ]
+        widgets = {
+            'twilio_auth_token': forms.PasswordInput(render_value=True),
         }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Make API fields conditional based on notification type
-        self.fields['smtp_host'].required = False
-        self.fields['smtp_port'].required = False
-        self.fields['smtp_username'].required = False
-        self.fields['smtp_password'].required = False
-        self.fields['twilio_account_sid'].required = False
-        self.fields['twilio_auth_token'].required = False
-        self.fields['twilio_phone_number'].required = False
-        self.fields['twilio_whatsapp_number'].required = False
+
+        # Disable quota fields in the form
+        self.fields['daily_email_limit'].disabled = True
+        self.fields['monthly_email_limit'].disabled = True
 
 
 class SubscriptionForm(forms.ModelForm):
@@ -39,6 +55,8 @@ class SubscriptionForm(forms.ModelForm):
 
 
 class AnonymousSubscriptionForm(forms.ModelForm):
+    # hcaptcha = hCaptchaField()
+
     class Meta:
         model = AnonymousSubscription
         fields = ['name', 'email', 'phone_number', 'whatsapp_number', 'notification_preference']

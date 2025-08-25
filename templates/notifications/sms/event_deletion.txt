@@ -1,0 +1,10 @@
+🎉 New Event: {{ event.title }}
+
+📅 {{ event.start_datetime|date:"M d, Y g:i A" }}
+📍 {{ event.location|default:"TBD" }}
+
+From: {{ organization.name }}
+
+Details: {{ event_url }}
+
+Reply STOP to unsubscribe

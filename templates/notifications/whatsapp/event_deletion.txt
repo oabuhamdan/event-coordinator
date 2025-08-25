@@ -1,0 +1,9 @@
+❌ *Event Cancelled*
+
+{{ event.title }}
+
+Was scheduled: {{ event.start_datetime|date:"F d, Y" }} at {{ event.start_datetime|time:"g:i A" }}
+
+From: *{{ organization.name }}*
+
+We apologize for any inconvenience.

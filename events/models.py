@@ -1,3 +1,4 @@
+# events/models.py
 from datetime import timedelta
 from django.db import models
 from django.conf import settings
@@ -10,11 +11,11 @@ class EventManager(models.Manager):
 
     def upcoming(self):
         """Get upcoming events."""
-        return self.filter(date_time__gte=timezone.now())
+        return self.filter(start_datetime__gte=timezone.now())
 
     def past(self):
         """Get past events."""
-        return self.filter(date_time__lt=timezone.now())
+        return self.filter(end_datetime__lt=timezone.now())
 
     def for_organization(self, organization):
         """Get events for a specific organization."""
@@ -24,12 +25,20 @@ class EventManager(models.Manager):
 class Event(models.Model):
     organization = models.ForeignKey('organizations.Organization', on_delete=models.CASCADE)
     title = models.CharField(max_length=200)
+    slug = models.SlugField(max_length=250, blank=True)  # Make it blank for now
     description = models.TextField(blank=True)
-    date_time = models.DateTimeField()
-    duration_hours = models.DecimalField(max_digits=4, decimal_places=2, default=1.0)
+
+    # Updated datetime fields
+    start_datetime = models.DateTimeField()
+    end_datetime = models.DateTimeField()
+
     location = models.CharField(max_length=200, blank=True)
-    notification_hours_before = models.IntegerField(default=24)
-    max_participants = models.IntegerField(blank=True, null=True)
+
+    # Notification settings
+    notify_on_creation = models.BooleanField(default=True)
+    notify_hours_before = models.IntegerField(default=24)
+    notify_on_deletion = models.BooleanField(default=True)
+
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -37,20 +46,47 @@ class Event(models.Model):
     objects = EventManager()
 
     class Meta:
-        ordering = ['-date_time']
+        ordering = ['-start_datetime']
+        # Remove unique_together for now since we need to populate slugs first
 
     def __str__(self):
-        return f"{self.title} - {self.date_time}"
+        return f"{self.title} - {self.start_datetime}"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            from django.utils.text import slugify
+            import uuid
+            base_slug = slugify(self.title)
+            if not base_slug:  # If title has no valid characters for slug
+                base_slug = f"event-{uuid.uuid4().hex[:8]}"
+
+            self.slug = base_slug
+
+            # Ensure uniqueness within organization
+            counter = 1
+            original_slug = self.slug
+            while Event.objects.filter(organization=self.organization, slug=self.slug).exclude(pk=self.pk).exists():
+                self.slug = f"{original_slug}-{counter}"
+                counter += 1
+
+        super().save(*args, **kwargs)
 
     @property
-    def end_time(self):
-        """Calculate event end time."""
-        return self.date_time + timedelta(hours=float(self.duration_hours))
+    def duration_hours(self):
+        """Calculate duration in hours."""
+        if self.end_datetime and self.start_datetime:
+            delta = self.end_datetime - self.start_datetime
+            return delta.total_seconds() / 3600
+        return 0
 
     @property
     def is_upcoming(self):
         """Check if event is upcoming."""
-        return self.date_time > timezone.now()
+        return self.start_datetime > timezone.now()
+
+    def clean(self):
+        if self.end_datetime and self.start_datetime and self.end_datetime <= self.start_datetime:
+            raise ValidationError("End datetime must be after start datetime")
 
 
 class EventResponse(models.Model):
@@ -73,14 +109,14 @@ class EventResponse(models.Model):
             ['event', 'anonymous_subscription']
         ]
 
-    def __str__(self):
-        responder = self.user.username if self.user else (
-            self.anonymous_subscription.name if self.anonymous_subscription else 'Unknown'
-        )
-        return f"{responder} - {self.event.title}: {self.response}"
-
     def clean(self):
         if not self.user and not self.anonymous_subscription:
             raise ValidationError("Either user or anonymous_subscription must be set")
         if self.user and self.anonymous_subscription:
             raise ValidationError("Cannot have both user and anonymous_subscription")
+
+    def __str__(self):
+        responder = self.user.username if self.user else (
+            self.anonymous_subscription.name if self.anonymous_subscription else 'Unknown'
+        )
+        return f"{responder} - {self.event.title}: {self.response}"

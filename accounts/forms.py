@@ -3,12 +3,24 @@ Forms for user accounts and availability management.
 """
 from django import forms
 from django.core.exceptions import ValidationError
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from datetime import datetime
 import json
+from hcaptcha.fields import hCaptchaField
 
 from .models import User
 from .services.availability_service import AvailabilityService
+
+
+# class CaptchaAuthenticationForm(AuthenticationForm):
+#     """Custom login form with hCaptcha."""
+#     hcaptcha = hCaptchaField()
+#
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         # Add Bootstrap classes to form fields
+#         self.fields['username'].widget.attrs.update({'class': 'form-control'})
+#         self.fields['password'].widget.attrs.update({'class': 'form-control'})
 
 
 class AvailabilityForm(forms.Form):
@@ -109,6 +121,7 @@ class UserRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     phone_number = forms.CharField(max_length=20, required=False)
     whatsapp_number = forms.CharField(max_length=20, required=False)
+    # hcaptcha = hCaptchaField()
 
     class Meta:
         model = User
@@ -128,6 +141,7 @@ class OrganizationRegistrationForm(UserCreationForm):
     email = forms.EmailField(required=True)
     phone_number = forms.CharField(max_length=20, required=False)
     whatsapp_number = forms.CharField(max_length=20, required=False)
+    # hcaptcha = hCaptchaField()
 
     class Meta:
         model = User

@@ -1,26 +1,27 @@
+# notifications/tasks.py
 import logging
+
 from celery import shared_task
 from django.conf import settings
-from django.utils import timezone
+from django.template.loader import render_to_string
 
 # Import Twilio only if available
 try:
     from twilio.rest import Client
     from twilio.base.exceptions import TwilioException
+
     TWILIO_AVAILABLE = True
 except ImportError:
     TWILIO_AVAILABLE = False
     TwilioException = Exception
-    Client = None
 
 logger = logging.getLogger(__name__)
 
 
 @shared_task(bind=True, retry_backoff=True, max_retries=3)
-def send_event_notifications(self, event_id):
-    """Send notifications for a new event to all relevant subscribers"""
+def send_event_notifications(self, event_id, notification_type='creation'):
+    """Send notifications for event creation or deletion"""
     from events.models import Event
-    from events.services import AvailabilityService
     from organizations.models import Subscription, AnonymousSubscription
 
     try:
@@ -32,574 +33,200 @@ def send_event_notifications(self, event_id):
     organization = event.organization
     notifications_sent = 0
 
-    # Get all regular subscribers
-    regular_subscribers = Subscription.objects.filter(organization=organization)
+    # Template selection based on notification type
+    if notification_type == 'deletion':
+        email_template = 'notifications/email/event_deletion.html'
+        sms_template = 'notifications/sms/event_deletion.txt'
+        whatsapp_template = 'notifications/whatsapp/event_deletion.txt'
+        subject_prefix = 'Event Cancelled'
+    else:
+        email_template = 'notifications/email/event_notification.html'
+        sms_template = 'notifications/sms/event_notification.txt'
+        whatsapp_template = 'notifications/whatsapp/event_notification.txt'
+        subject_prefix = 'New Event'
 
-    # Get all anonymous subscribers
+    # Get all subscribers
+    regular_subscribers = Subscription.objects.filter(organization=organization)
     anonymous_subscribers = AnonymousSubscription.objects.filter(organization=organization)
 
     # Process regular subscribers
     for subscription in regular_subscribers:
         user = subscription.user
-
-        # Check notification preference
-        should_notify = False
-
-        if subscription.notification_preference == 'all':
-            should_notify = True
-        elif subscription.notification_preference == 'matching':
-            # Use service layer for availability checking
-            should_notify = AvailabilityService.user_matches_event(user, event)
+        should_notify = _should_notify_user(subscription, event, notification_type)
 
         if should_notify:
-            # Send notification based on organization's preferred method
-            try:
-                if organization.notification_type == 'email':
-                    send_email_notification.delay(event_id, user_id=user.id)
-                elif organization.notification_type == 'sms':
-                    send_sms_notification.delay(event_id, user_id=user.id)
-                elif organization.notification_type == 'whatsapp':
-                    send_whatsapp_notification.delay(event_id, user_id=user.id)
-
-                notifications_sent += 1
-            except Exception as e:
-                logger.error(f"Failed to queue notification for user {user.id}: {e}")
+            context = _get_notification_context(event, organization, user.username, user.email)
+            _send_notification(organization, user.email, user.phone_number, user.whatsapp_number,
+                               email_template, sms_template, whatsapp_template, context, subject_prefix)
+            notifications_sent += 1
 
     # Process anonymous subscribers
     for anon_subscription in anonymous_subscribers:
-        # Check notification preference
-        should_notify = False
-
-        if anon_subscription.notification_preference == 'all':
-            should_notify = True
-        elif anon_subscription.notification_preference == 'matching':
-            # Use service layer for availability checking
-            should_notify = AvailabilityService.anonymous_matches_event(anon_subscription, event)
+        should_notify = _should_notify_anonymous(anon_subscription, event, notification_type)
 
         if should_notify:
-            # Send notification based on organization's preferred method
-            try:
-                if organization.notification_type == 'email':
-                    send_anonymous_email_notification.delay(event_id, anon_subscription_id=anon_subscription.id)
-                elif organization.notification_type == 'sms' and anon_subscription.phone_number:
-                    send_anonymous_sms_notification.delay(event_id, anon_subscription_id=anon_subscription.id)
-                elif organization.notification_type == 'whatsapp' and anon_subscription.whatsapp_number:
-                    send_anonymous_whatsapp_notification.delay(event_id, anon_subscription_id=anon_subscription.id)
+            context = _get_notification_context(event, organization,
+                                                anon_subscription.name, anon_subscription.email,
+                                                is_anonymous=True)
+            _send_notification(organization, anon_subscription.email,
+                               anon_subscription.phone_number, anon_subscription.whatsapp_number,
+                               email_template, sms_template, whatsapp_template, context, subject_prefix)
+            notifications_sent += 1
 
-                notifications_sent += 1
-            except Exception as e:
-                logger.error(f"Failed to queue notification for anonymous subscription {anon_subscription.id}: {e}")
-
-    logger.info(f"Queued {notifications_sent} notifications for event {event_id}")
+    logger.info(f"Sent {notifications_sent} notifications for event {event_id}")
     return notifications_sent
 
 
-@shared_task(bind=True, retry_backoff=True, max_retries=3)
-def send_email_notification(self, event_id, user_id):
-    """Send email notification to a registered user"""
-    from events.models import Event
-    from events.services import AvailabilityService
-    from django.contrib.auth import get_user_model
-    from notifications.utils import render_email_template, send_email, log_notification
+def _should_notify_user(subscription, event, notification_type):
+    """Determine if user should be notified."""
+    if notification_type == 'deletion':
+        return event.notify_on_deletion  # Always notify for deletions
 
-    User = get_user_model()
-
-    try:
-        event = Event.objects.get(id=event_id)
-        user = User.objects.get(id=user_id)
-    except (Event.DoesNotExist, User.DoesNotExist) as e:
-        logger.error(f"Error in send_email_notification: {e}")
-        return False
-
-    try:
-        # Use service layer for availability checking
-        matches_availability = AvailabilityService.user_matches_event(user, event)
-
-        # Prepare email content
-        context = {
-            'event': event,
-            'user': user,
-            'user_name': user.get_full_name() or user.username,
-            'organization': event.organization,
-            'event_url': f"{settings.SITE_URL}/events/{event.id}/",
-            'respond_url': f"{settings.SITE_URL}/events/{event.id}/respond/",
-            'availability_url': f"{settings.SITE_URL}/events/availability/{event.organization.id}/",
-            'unsubscribe_url': f"{settings.SITE_URL}/organizations/{event.organization.id}/unsubscribe/",
-            'matches_availability': matches_availability,
-        }
-
-        # Fallback text for email
-        fallback_text = f"""
-New Event: {event.title}
-
-Organization: {event.organization.name}
-Date: {event.date_time.strftime('%B %d, %Y at %I:%M %p')}
-Location: {event.location or 'TBD'}
-
-View details: {context['event_url']}
-Respond: {context['respond_url']}
-
-Best regards,
-{event.organization.name}
-        """.strip()
-
-        # Render email template
-        email_content = render_email_template(
-            'notifications/email/event_notification.html', 
-            context, 
-            fallback_text
-        )
-
-        subject = f"New Event: {event.title} - {event.organization.name}"
-
-        # Send email
-        send_email(
-            recipient_email=user.email,
-            subject=subject,
-            text_message=email_content['text_message'],
-            html_message=email_content['html_message']
-        )
-
-        # Log successful notification
-        log_notification(
-            event=event,
-            user=user,
-            notification_type='email',
-            success=True
-        )
-
+    if subscription.notification_preference == 'all':
         return True
 
-    except Exception as e:
-        # Log failed notification
-        log_notification(
-            event=event,
-            user=user,
-            notification_type='email',
-            success=False,
-            error_message=str(e)
-        )
+    elif subscription.notification_preference == 'matching':
+        # Check if user's availability matches event time
+        try:
+            from accounts.services.availability_service import AvailabilityService
+            return AvailabilityService.user_matches_event(subscription.user, event)
+        except:
+            return True  # Fallback to notify if availability check fails
 
-        # Retry the task
-        raise self.retry(exc=e, countdown=60 * (self.request.retries + 1))
+    return False
 
 
-@shared_task(bind=True, retry_backoff=True, max_retries=3)
-def send_anonymous_email_notification(self, event_id, anon_subscription_id):
-    """Send email notification to an anonymous subscriber"""
-    from events.models import Event
-    from organizations.models import AnonymousSubscription
-    from notifications.utils import render_email_template, send_email, log_notification
+def _should_notify_anonymous(anon_subscription, event, notification_type):
+    """Determine if anonymous user should be notified."""
+    if notification_type == 'deletion':
+        return event.notify_on_deletion
 
-    try:
-        event = Event.objects.get(id=event_id)
-        anon_subscription = AnonymousSubscription.objects.get(id=anon_subscription_id)
-    except (Event.DoesNotExist, AnonymousSubscription.DoesNotExist) as e:
-        logger.error(f"Error in send_anonymous_email_notification: {e}")
-        return False
-
-    try:
-        # Prepare email content
-        context = {
-            'event': event,
-            'subscriber_name': anon_subscription.name,
-            'organization': event.organization,
-            'event_url': f"{settings.SITE_URL}/events/{event.id}/",
-            'availability_url': f"{settings.SITE_URL}/events/availability/{event.organization.id}/{anon_subscription.id}/anonymous/",
-            'create_account_url': f"{settings.SITE_URL}/accounts/register/",
-        }
-
-        # Fallback text for email
-        fallback_text = f"""
-Hi {anon_subscription.name},
-
-New Event: {event.title}
-
-Organization: {event.organization.name}
-Date: {event.date_time.strftime('%B %d, %Y at %I:%M %p')}
-Location: {event.location or 'TBD'}
-
-View details: {context['event_url']}
-Update availability: {context['availability_url']}
-
-Best regards,
-{event.organization.name}
-        """.strip()
-
-        # Render email template
-        email_content = render_email_template(
-            'notifications/email/anonymous_event_notification.html', 
-            context, 
-            fallback_text
-        )
-
-        subject = f"New Event: {event.title} - {event.organization.name}"
-
-        # Send email
-        send_email(
-            recipient_email=anon_subscription.email,
-            subject=subject,
-            text_message=email_content['text_message'],
-            html_message=email_content['html_message']
-        )
-
-        # Log successful notification
-        log_notification(
-            event=event,
-            anonymous_subscription=anon_subscription,
-            notification_type='email',
-            success=True
-        )
-
+    if anon_subscription.notification_preference == 'all':
         return True
+    elif anon_subscription.notification_preference == 'matching':
+        # Check if anonymous user's availability matches event time
+        try:
+            from accounts.services.availability_service import AvailabilityService
+            return AvailabilityService.anonymous_matches_event(anon_subscription, event)
+        except:
+            return True  # Fallback to notify if availability check fails
 
+    return False
+
+
+def _get_notification_context(event, organization, recipient_name, recipient_email, is_anonymous=False):
+    """Get context for notification templates."""
+    return {
+        'event': event,
+        'organization': organization,
+        'recipient_name': recipient_name,
+        'recipient_email': recipient_email,
+        'is_anonymous': is_anonymous,
+        'event_url': f"{settings.SITE_URL}/{organization.user.username}/events/{event.slug}/",
+        'respond_url': f"{settings.SITE_URL}/{organization.user.username}/events/{event.slug}/respond/",
+        'unsubscribe_url': f"{settings.SITE_URL}/organizations/{organization.user.username}/unsubscribe/",
+    }
+
+
+def _send_notification(organization, email, phone_number, whatsapp_number,
+                       email_template, sms_template, whatsapp_template, context, subject_prefix):
+    """Send notification via configured method."""
+    try:
+        if organization.notification_type == 'email':
+            _send_email_notification(email, email_template, context, subject_prefix)
+        elif organization.notification_type == 'sms' and phone_number:
+            _send_sms_notification(organization, phone_number, sms_template, context)
+        elif organization.notification_type == 'whatsapp' and whatsapp_number:
+            _send_whatsapp_notification(organization, whatsapp_number, whatsapp_template, context)
     except Exception as e:
-        # Log failed notification
-        log_notification(
-            event=event,
-            anonymous_subscription=anon_subscription,
-            notification_type='email',
-            success=False,
-            error_message=str(e)
-        )
-
-        # Retry the task
-        raise self.retry(exc=e, countdown=60 * (self.request.retries + 1))
+        logger.error(f"Failed to send notification: {str(e)}")
 
 
-@shared_task(bind=True, retry_backoff=True, max_retries=3)
-def send_sms_notification(self, event_id, user_id):
-    """Send SMS notification to a registered user"""
-    from events.models import Event
-    from django.contrib.auth import get_user_model
-    from notifications.utils import get_twilio_credentials, prepare_sms_content, send_sms, log_notification
+def _send_email_notification(email, template, context, subject_prefix):
+    """Send email notification."""
+    from django.core.mail import send_mail
 
+    html_content = render_to_string(template, context)
+    subject = f"{subject_prefix}: {context['event'].title}"
+
+    send_mail(
+        subject=subject,
+        message="",  # Plain text version can be added if needed
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+        html_message=html_content,
+        fail_silently=False,
+    )
+
+
+def _send_sms_notification(organization, phone_number, sms_template, context):
+    """Send SMS notification using template."""
     if not TWILIO_AVAILABLE:
         logger.error("Twilio is not installed. Install with: pip install twilio")
         return False
 
-    User = get_user_model()
+    # Get Twilio credentials
+    account_sid = getattr(organization, 'twilio_account_sid', None) or getattr(settings, 'TWILIO_ACCOUNT_SID', None)
+    auth_token = getattr(organization, 'twilio_auth_token', None) or getattr(settings, 'TWILIO_AUTH_TOKEN', None)
+    from_phone = getattr(organization, 'twilio_phone_number', None) or getattr(settings, 'TWILIO_PHONE_NUMBER', None)
 
-    try:
-        event = Event.objects.get(id=event_id)
-        user = User.objects.get(id=user_id)
-    except (Event.DoesNotExist, User.DoesNotExist) as e:
-        logger.error(f"Error in send_sms_notification: {e}")
-        return False
-
-    if not user.phone_number:
-        logger.warning(f"User {user.id} has no phone number for SMS notification")
+    if not all([account_sid, auth_token, from_phone]):
+        logger.error("Twilio SMS credentials not configured")
         return False
 
     try:
-        # Get Twilio credentials
-        credentials = get_twilio_credentials(event.organization)
-        
-        if not all([credentials['account_sid'], credentials['auth_token'], credentials['phone_number']]):
-            raise Exception("Twilio credentials not configured")
+        client = Client(account_sid, auth_token)
 
-        # Create Twilio client
-        client = Client(credentials['account_sid'], credentials['auth_token'])
+        # Render SMS content from template
+        message_body = render_to_string(sms_template, context).strip()
 
-        # Prepare SMS content
-        message_body = prepare_sms_content(event)
-
-        # Send SMS
-        send_sms(
-            client=client,
-            from_phone=credentials['phone_number'],
-            to_phone=user.phone_number,
-            message_body=message_body
+        client.messages.create(
+            body=message_body,
+            from_=from_phone,
+            to=phone_number
         )
-
-        # Log successful notification
-        log_notification(
-            event=event,
-            user=user,
-            notification_type='sms',
-            success=True
-        )
-
         return True
 
     except TwilioException as e:
-        # Log failed notification
-        log_notification(
-            event=event,
-            user=user,
-            notification_type='sms',
-            success=False,
-            error_message=f"Twilio error: {str(e)}"
-        )
-
-        # Don't retry on Twilio errors (usually config issues)
+        logger.error(f"Twilio SMS error: {str(e)}")
+        return False
+    except Exception as e:
+        logger.error(f"SMS sending error: {str(e)}")
         return False
 
-    except Exception as e:
-        # Log failed notification
-        log_notification(
-            event=event,
-            user=user,
-            notification_type='sms',
-            success=False,
-            error_message=str(e)
-        )
 
-        # Retry the task
-        raise self.retry(exc=e, countdown=60 * (self.request.retries + 1))
-
-
-@shared_task(bind=True, retry_backoff=True, max_retries=3)
-def send_anonymous_sms_notification(self, event_id, anon_subscription_id):
-    """Send SMS notification to an anonymous subscriber"""
-    from events.models import Event
-    from organizations.models import AnonymousSubscription
-    from notifications.utils import get_twilio_credentials, prepare_sms_content, send_sms, log_notification
-
+def _send_whatsapp_notification(organization, whatsapp_number, whatsapp_template, context):
+    """Send WhatsApp notification using template."""
     if not TWILIO_AVAILABLE:
         logger.error("Twilio is not installed. Install with: pip install twilio")
         return False
 
-    try:
-        event = Event.objects.get(id=event_id)
-        anon_subscription = AnonymousSubscription.objects.get(id=anon_subscription_id)
-    except (Event.DoesNotExist, AnonymousSubscription.DoesNotExist) as e:
-        logger.error(f"Error in send_anonymous_sms_notification: {e}")
+    # Get Twilio credentials
+    account_sid = getattr(organization, 'twilio_account_sid', None) or getattr(settings, 'TWILIO_ACCOUNT_SID', None)
+    auth_token = getattr(organization, 'twilio_auth_token', None) or getattr(settings, 'TWILIO_AUTH_TOKEN', None)
+    from_whatsapp = getattr(organization, 'twilio_whatsapp_number', None) or getattr(settings, 'TWILIO_WHATSAPP_NUMBER',
+                                                                                     None)
+
+    if not all([account_sid, auth_token, from_whatsapp]):
+        logger.error("Twilio WhatsApp credentials not configured")
         return False
 
-    if not anon_subscription.phone_number:
-        logger.warning(f"Anonymous subscription {anon_subscription_id} has no phone number for SMS")
-        return False
-
     try:
-        # Get Twilio credentials
-        credentials = get_twilio_credentials(event.organization)
-        
-        if not all([credentials['account_sid'], credentials['auth_token'], credentials['phone_number']]):
-            raise Exception("Twilio credentials not configured")
+        client = Client(account_sid, auth_token)
 
-        # Create Twilio client
-        client = Client(credentials['account_sid'], credentials['auth_token'])
+        # Render WhatsApp content from template
+        message_body = render_to_string(whatsapp_template, context).strip()
 
-        # Prepare SMS content
-        message_body = prepare_sms_content(
-            event=event,
-            recipient_name=anon_subscription.name,
-            is_anonymous=True
+        client.messages.create(
+            body=message_body,
+            from_=from_whatsapp,
+            to=f"whatsapp:{whatsapp_number}"
         )
-
-        # Send SMS
-        send_sms(
-            client=client,
-            from_phone=credentials['phone_number'],
-            to_phone=anon_subscription.phone_number,
-            message_body=message_body
-        )
-
-        # Log successful notification
-        log_notification(
-            event=event,
-            anonymous_subscription=anon_subscription,
-            notification_type='sms',
-            success=True
-        )
-
         return True
 
     except TwilioException as e:
-        # Log failed notification
-        log_notification(
-            event=event,
-            anonymous_subscription=anon_subscription,
-            notification_type='sms',
-            success=False,
-            error_message=f"Twilio error: {str(e)}"
-        )
-
-        # Don't retry on Twilio errors
+        logger.error(f"Twilio WhatsApp error: {str(e)}")
         return False
-
     except Exception as e:
-        # Log failed notification
-        log_notification(
-            event=event,
-            anonymous_subscription=anon_subscription,
-            notification_type='sms',
-            success=False,
-            error_message=str(e)
-        )
-
-        # Retry the task
-        raise self.retry(exc=e, countdown=60 * (self.request.retries + 1))
-
-
-@shared_task(bind=True, retry_backoff=True, max_retries=3)
-def send_whatsapp_notification(self, event_id, user_id):
-    """Send WhatsApp notification to a registered user"""
-    from events.models import Event
-    from django.contrib.auth import get_user_model
-    from notifications.utils import get_twilio_credentials, prepare_whatsapp_content, send_whatsapp, log_notification
-
-    if not TWILIO_AVAILABLE:
-        logger.error("Twilio is not installed. Install with: pip install twilio")
+        logger.error(f"WhatsApp sending error: {str(e)}")
         return False
-
-    User = get_user_model()
-
-    try:
-        event = Event.objects.get(id=event_id)
-        user = User.objects.get(id=user_id)
-    except (Event.DoesNotExist, User.DoesNotExist) as e:
-        logger.error(f"Error in send_whatsapp_notification: {e}")
-        return False
-
-    if not user.phone_number:
-        logger.warning(f"User {user.id} has no phone number for WhatsApp notification")
-        return False
-
-    try:
-        # Get Twilio credentials
-        credentials = get_twilio_credentials(event.organization)
-        
-        if not all([credentials['account_sid'], credentials['auth_token'], credentials['whatsapp_number']]):
-            raise Exception("Twilio WhatsApp credentials not configured")
-
-        # Create Twilio client
-        client = Client(credentials['account_sid'], credentials['auth_token'])
-
-        # Prepare WhatsApp content
-        respond_url = f"{settings.SITE_URL}/events/{event.id}/respond/"
-        message_body = prepare_whatsapp_content(
-            event=event,
-            respond_url=respond_url
-        )
-
-        # Send WhatsApp message
-        send_whatsapp(
-            client=client,
-            from_whatsapp=credentials['whatsapp_number'],
-            to_phone=user.phone_number,
-            message_body=message_body
-        )
-
-        # Log successful notification
-        log_notification(
-            event=event,
-            user=user,
-            notification_type='whatsapp',
-            success=True
-        )
-
-        return True
-
-    except TwilioException as e:
-        # Log failed notification
-        log_notification(
-            event=event,
-            user=user,
-            notification_type='whatsapp',
-            success=False,
-            error_message=f"Twilio error: {str(e)}"
-        )
-
-        # Don't retry on Twilio errors
-        return False
-
-    except Exception as e:
-        # Log failed notification
-        log_notification(
-            event=event,
-            user=user,
-            notification_type='whatsapp',
-            success=False,
-            error_message=str(e)
-        )
-
-        # Retry the task
-        raise self.retry(exc=e, countdown=60 * (self.request.retries + 1))
-
-
-@shared_task(bind=True, retry_backoff=True, max_retries=3)
-def send_anonymous_whatsapp_notification(self, event_id, anon_subscription_id):
-    """Send WhatsApp notification to an anonymous subscriber"""
-    from events.models import Event
-    from organizations.models import AnonymousSubscription
-    from notifications.utils import get_twilio_credentials, prepare_whatsapp_content, send_whatsapp, log_notification
-
-    if not TWILIO_AVAILABLE:
-        logger.error("Twilio is not installed. Install with: pip install twilio")
-        return False
-
-    try:
-        event = Event.objects.get(id=event_id)
-        anon_subscription = AnonymousSubscription.objects.get(id=anon_subscription_id)
-    except (Event.DoesNotExist, AnonymousSubscription.DoesNotExist) as e:
-        logger.error(f"Error in send_anonymous_whatsapp_notification: {e}")
-        return False
-
-    if not anon_subscription.whatsapp_number:
-        logger.warning(f"Anonymous subscription {anon_subscription_id} has no WhatsApp number")
-        return False
-
-    try:
-        # Get Twilio credentials
-        credentials = get_twilio_credentials(event.organization)
-        
-        if not all([credentials['account_sid'], credentials['auth_token'], credentials['whatsapp_number']]):
-            raise Exception("Twilio WhatsApp credentials not configured")
-
-        # Create Twilio client
-        client = Client(credentials['account_sid'], credentials['auth_token'])
-
-        # Prepare WhatsApp content
-        availability_url = f"{settings.SITE_URL}/events/availability/{event.organization.id}/{anon_subscription.id}/anonymous/"
-        message_body = prepare_whatsapp_content(
-            event=event,
-            recipient_name=anon_subscription.name,
-            is_anonymous=True,
-            availability_url=availability_url
-        )
-
-        # Send WhatsApp message
-        send_whatsapp(
-            client=client,
-            from_whatsapp=credentials['whatsapp_number'],
-            to_phone=anon_subscription.whatsapp_number,
-            message_body=message_body
-        )
-
-        # Log successful notification
-        log_notification(
-            event=event,
-            anonymous_subscription=anon_subscription,
-            notification_type='whatsapp',
-            success=True
-        )
-
-        return True
-
-    except TwilioException as e:
-        # Log failed notification
-        log_notification(
-            event=event,
-            anonymous_subscription=anon_subscription,
-            notification_type='whatsapp',
-            success=False,
-            error_message=f"Twilio error: {str(e)}"
-        )
-
-        # Don't retry on Twilio errors
-        return False
-
-    except Exception as e:
-        # Log failed notification
-        log_notification(
-            event=event,
-            anonymous_subscription=anon_subscription,
-            notification_type='whatsapp',
-            success=False,
-            error_message=str(e)
-        )
-
-        # Retry the task
-        raise self.retry(exc=e, countdown=60 * (self.request.retries + 1))

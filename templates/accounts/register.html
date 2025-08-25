@@ -42,13 +42,27 @@
                     </a>
                 </div>
 
-                <div class="text-center mt-3">
-                    <p class="text-muted">Want to register as {% if user_type == 'organization' %}user{% else %}organization{% endif %}?</p>
-                    <a href="{% url 'accounts:register_{% if user_type == 'organization' %}user{% else %}organization{% endif %}' %}" class="btn btn-outline-info btn-sm">
-                        <i class="fas fa-{% if user_type == 'organization' %}user{% else %}building{% endif %} me-2"></i>
-                        Register as {% if user_type == 'organization' %}User{% else %}Organization{% endif %}
-                    </a>
-                </div>
+                {% if user_type == 'organization' %}
+                    {% with url_name='accounts:register_user' alt_type='User' icon='user' %}
+                        <div class="text-center mt-3">
+                            <p class="text-muted">Want to register as {{ alt_type|lower }}?</p>
+                            <a href="{% url url_name %}" class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-{{ icon }} me-2"></i>
+                                Register as {{ alt_type }}
+                            </a>
+                        </div>
+                    {% endwith %}
+                {% else %}
+                    {% with url_name='accounts:register_organization' alt_type='Organization' icon='building' %}
+                        <div class="text-center mt-3">
+                            <p class="text-muted">Want to register as {{ alt_type|lower }}?</p>
+                            <a href="{% url url_name %}" class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-{{ icon }} me-2"></i>
+                                Register as {{ alt_type }}
+                            </a>
+                        </div>
+                    {% endwith %}
+                {% endif %}
             </div>
         </div>
     </div>

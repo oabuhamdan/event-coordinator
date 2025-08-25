@@ -10,16 +10,16 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
     path('edit/', views.edit_profile, name='edit_profile'),
     path('subscribers/', views.subscribers, name='subscribers'),
-    path('<int:organization_id>/subscriber-availability/', views.get_subscriber_availability,
+    path('<str:username>/subscriber-availability/', views.get_subscriber_availability,
          name='subscriber_availability'),
     path('analytics/', views.availability_analytics, name='availability_analytics'),
 
     # Analytics endpoints
-    path('<int:organization_id>/datetime-slot-details/', views.get_datetime_slot_details, name='datetime_slot_details'),
+    path('<str:username>/datetime-slot-details/', views.get_datetime_slot_details, name='datetime_slot_details'),
 
     # Organization detail and subscription management
-    path('<int:pk>/', views.organization_detail, name='detail'),
-    path('<int:pk>/subscribe/', views.subscribe, name='subscribe'),
-    path('<int:pk>/unsubscribe/', views.unsubscribe, name='unsubscribe'),
-    path('<int:pk>/anonymous-subscribe/', views.anonymous_subscribe, name='anonymous_subscribe'),
+    path('<str:username>/', views.organization_detail, name='detail'),
+    path('<str:username>/subscribe/', views.subscribe, name='subscribe'),
+    path('<str:username>/unsubscribe/', views.unsubscribe, name='unsubscribe'),
+    path('<str:username>/anonymous-subscribe/', views.anonymous_subscribe, name='anonymous_subscribe'),
 ]

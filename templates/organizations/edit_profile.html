@@ -4,92 +4,66 @@
 {% block title %}Edit Profile - {{ organization.name }}{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="mb-0">
-                    <i class="fas fa-edit me-2"></i>Edit Organization Profile
-                </h4>
-            </div>
-            <div class="card-body">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h5>Basic Information</h5>
-                            {{ form.name|as_crispy_field }}
-                            {{ form.description|as_crispy_field }}
-                            {{ form.website|as_crispy_field }}
-                            {{ form.logo|as_crispy_field }}
-                            
-                            {% if organization.logo %}
-                                <div class="mb-3">
-                                    <label class="form-label">Current Logo:</label><br>
-                                    <img src="{{ organization.logo.url }}" alt="Current Logo" class="img-thumbnail" style="max-width: 200px;">
-                                </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            <h5>Notification Settings</h5>
-                            {{ form.notification_type|as_crispy_field }}
-                            
-                            <div id="email-settings" class="notification-settings">
-                                <h6>Email Settings</h6>
-                                {{ form.smtp_host|as_crispy_field }}
-                                {{ form.smtp_port|as_crispy_field }}
-                                {{ form.smtp_username|as_crispy_field }}
-                                {{ form.smtp_password|as_crispy_field }}
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit me-2"></i>Edit Organization Profile
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Basic Information</h5>
+                                {{ org_form.name|as_crispy_field }}
+                                {{ org_form.description|as_crispy_field }}
+                                {{ org_form.website|as_crispy_field }}
+                                {{ org_form.logo|as_crispy_field }}
+
+                                {% if organization.logo %}
+                                    <div class="mb-3">
+                                        <label class="form-label">Current Logo:</label><br>
+                                        <img src="{{ organization.logo.url }}" alt="Current Logo" class="img-thumbnail"
+                                             style="max-width: 200px;">
+                                    </div>
+                                {% endif %}
+
+                                {{ org_form.contact_email|as_crispy_field }}
+                                {{ org_form.contact_phone|as_crispy_field }}
                             </div>
-                            
-                            <div id="sms-whatsapp-settings" class="notification-settings" style="display: none;">
-                                <h6>SMS/WhatsApp Settings (Twilio)</h6>
-                                {{ form.twilio_account_sid|as_crispy_field }}
-                                {{ form.twilio_auth_token|as_crispy_field }}
-                                {{ form.twilio_phone_number|as_crispy_field }}
-                                {{ form.twilio_whatsapp_number|as_crispy_field }}
+
+                            <div class="col-md-6">
+                                <h5>Notification Preferences</h5>
+                                {{ notif_form.via_email|as_crispy_field }}
+                                {{ notif_form.via_sms|as_crispy_field }}
+                                {{ notif_form.via_whatsapp|as_crispy_field }}
+
+                                <h6 class="mt-3">Email Limits</h6>
+                                {{ notif_form.daily_email_limit|as_crispy_field }}
+                                {{ notif_form.monthly_email_limit|as_crispy_field }}
+
+                                <h5 class="mt-4">SMS/WhatsApp Settings (Twilio)</h5>
+                                {{ notif_form.twilio_account_sid|as_crispy_field }}
+                                {{ notif_form.twilio_auth_token|as_crispy_field }}
+                                {{ notif_form.twilio_phone_number|as_crispy_field }}
+                                {{ notif_form.twilio_whatsapp_number|as_crispy_field }}
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="mt-4">
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save me-2"></i>Update Profile
-                        </button>
-                        <a href="{% url 'organizations:dashboard' %}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
-                        </a>
-                    </div>
-                </form>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i>Update Profile
+                            </button>
+                            <a href="{% url 'organizations:dashboard' %}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
-{% endblock %}
-
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const notificationType = document.getElementById('id_notification_type');
-    const emailSettings = document.getElementById('email-settings');
-    const smsWhatsappSettings = document.getElementById('sms-whatsapp-settings');
-    
-    function toggleSettings() {
-        if (notificationType.value === 'email') {
-            emailSettings.style.display = 'block';
-            smsWhatsappSettings.style.display = 'none';
-        } else if (notificationType.value === 'sms' || notificationType.value === 'whatsapp') {
-            emailSettings.style.display = 'none';
-            smsWhatsappSettings.style.display = 'block';
-        }
-    }
-    
-    // Initial toggle
-    toggleSettings();
-    
-    // Listen for changes
-    notificationType.addEventListener('change', toggleSettings);
-});
-</script>
 {% endblock %}

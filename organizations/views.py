@@ -13,8 +13,8 @@ from accounts.models import UserAvailability  # This was missing
 from accounts.services.session_service import SessionService
 from accounts.utils import organization_required, regular_user_required
 from events.models import Event
-from .forms import OrganizationForm, SubscriptionForm, AnonymousSubscriptionForm
-from .models import Organization, Subscription, AnonymousSubscription
+from .forms import OrganizationForm, SubscriptionForm, AnonymousSubscriptionForm, NotificationPreferenceForm
+from .models import Organization, Subscription, AnonymousSubscription, NotificationPreference
 from .services import (
     OrganizationService, OrganizationAnalyticsService, SubscriptionService,
     OrganizationQueryService, DateRangeService
@@ -63,28 +63,32 @@ def dashboard(request):
     return render(request, 'organizations/dashboard.html', context)
 
 
+
 @login_required
 @organization_required
 def edit_profile(request):
-    """Edit organization profile."""
+    """Edit organization profile and notification preferences."""
     organization = OrganizationService.get_organization_for_user(request.user)
-    if not organization:
-        return redirect('organizations:create_profile')
+    notification_preferences, _ = NotificationPreference.objects.get_or_create(organization=organization)
 
     if request.method == 'POST':
-        form = OrganizationForm(request.POST, request.FILES, instance=organization)
-        if form.is_valid():
-            form.save()
+        org_form = OrganizationForm(request.POST, request.FILES, instance=organization)
+        notif_form = NotificationPreferenceForm(request.POST, instance=notification_preferences)
+
+        if org_form.is_valid() and notif_form.is_valid():
+            org_form.save()
+            notif_form.save()
             messages.success(request, 'Organization profile updated successfully!')
             return redirect('organizations:dashboard')
     else:
-        form = OrganizationForm(instance=organization)
+        org_form = OrganizationForm(instance=organization)
+        notif_form = NotificationPreferenceForm(instance=notification_preferences)
 
     return render(request, 'organizations/edit_profile.html', {
-        'form': form,
+        'org_form': org_form,
+        'notif_form': notif_form,
         'organization': organization
     })
-
 
 def list_organizations(request):
     """List all organizations."""
@@ -95,9 +99,11 @@ def list_organizations(request):
     return render(request, 'organizations/list.html', {'organizations': organizations})
 
 
-def organization_detail(request, pk):
+def organization_detail(request, username):
     """Display organization details with unified subscription management."""
-    organization = get_object_or_404(Organization, pk=pk)
+    organization = get_object_or_404(Organization, user__username=username)
+    if request.user == organization.user:
+        return redirect('organizations:dashboard')
 
     # Track session
     SessionService.track_session(request, request.user if request.user.is_authenticated else None)
@@ -150,25 +156,26 @@ def organization_detail(request, pk):
                 del request.session[f'anonymous_subscription_{organization.pk}']
 
     # Get upcoming events for this organization
-    upcoming_events = Event.objects.filter(
+    events = Event.objects.filter(
         organization=organization,
-        date_time__gte=timezone.now()
-    ).order_by('date_time')[:5]
+    )
 
+    upcoming_events = events.filter(start_datetime__gte=timezone.now()).order_by('-start_datetime')
+    past_events = events.filter(start_datetime__lt=timezone.now()).count()
     context['upcoming_events'] = upcoming_events
-
+    context['past_events_count'] = past_events
     return render(request, 'organizations/detail.html', context)
 
 
 @login_required
 @regular_user_required
-def subscribe(request, pk):
+def subscribe(request, username):
     """Subscribe a registered user to an organization."""
-    organization = get_object_or_404(Organization, pk=pk)
+    organization = get_object_or_404(Organization, user__username=username)
 
     if SubscriptionService.is_user_subscribed(request.user, organization):
         messages.info(request, f'You are already subscribed to {organization.name}.')
-        return redirect('accounts:set_availability', organization_id=organization.pk)
+        return redirect('accounts:set_availability', username=organization.user.username)
 
     if request.method == 'POST':
         form = SubscriptionForm(request.POST)
@@ -176,7 +183,7 @@ def subscribe(request, pk):
             subscription_data = form.cleaned_data
             SubscriptionService.create_subscription(request.user, organization, subscription_data)
             messages.success(request, f'Successfully subscribed to {organization.name}!')
-            return redirect('accounts:set_availability', organization_id=organization.pk)
+            return redirect('accounts:set_availability', username=organization.user.username)
     else:
         form = SubscriptionForm()
 
@@ -187,9 +194,9 @@ def subscribe(request, pk):
 
 
 @csrf_exempt
-def anonymous_subscribe(request, pk):
+def anonymous_subscribe(request, username):
     """Handle anonymous subscription to an organization."""
-    organization = get_object_or_404(Organization, pk=pk)
+    organization = get_object_or_404(Organization, user__username=username)
 
     # Track session
     SessionService.track_session(request)
@@ -205,11 +212,11 @@ def anonymous_subscribe(request, pk):
                         'success': True,
                         'already_subscribed': True,
                         'message': f'You are already subscribed to {organization.name}.',
-                        'redirect_url': f'/accounts/availability/anonymous/set/{organization.pk}/'
+                        'redirect_url': f'/accounts/availability/anonymous/set/{organization.user.username}/'
                     })
                 else:
                     messages.info(request, f'You are already subscribed to {organization.name}.')
-                    return redirect('accounts:set_anonymous_availability', organization_id=organization.pk)
+                    return redirect('accounts:set_anonymous_availability', username=organization.user.username)
             except AnonymousSubscription.DoesNotExist:
                 # Clean up invalid session data
                 del request.session[f'anonymous_subscription_{organization.pk}']
@@ -233,11 +240,11 @@ def anonymous_subscribe(request, pk):
                         'success': True,
                         'already_subscribed': True,
                         'message': f'Welcome back! You are already subscribed to {organization.name}.',
-                        'redirect_url': f'/accounts/availability/anonymous/set/{organization.pk}/'
+                        'redirect_url': f'/accounts/availability/anonymous/set/{organization.user.username}/'
                     })
                 else:
                     messages.success(request, f'Welcome back! You are already subscribed to {organization.name}.')
-                    return redirect('accounts:set_anonymous_availability', organization_id=organization.pk)
+                    return redirect('accounts:set_anonymous_availability', username=organization.user.username)
 
             # Create new subscription
             subscription = SubscriptionService.create_anonymous_subscription(organization, subscription_data)
@@ -247,11 +254,11 @@ def anonymous_subscribe(request, pk):
                 return JsonResponse({
                     'success': True,
                     'message': f'Successfully subscribed to {organization.name}!',
-                    'redirect_url': f'/accounts/availability/anonymous/set/{organization.pk}/'
+                    'redirect_url': f'/accounts/availability/anonymous/set/{organization.user.username}/'
                 })
             else:
                 messages.success(request, f'Successfully subscribed to {organization.name}!')
-                return redirect('accounts:set_anonymous_availability', organization_id=organization.pk)
+                return redirect('accounts:set_anonymous_availability', username=organization.user.username)
         else:
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({
@@ -269,13 +276,13 @@ def anonymous_subscribe(request, pk):
 
 @login_required
 @regular_user_required
-def unsubscribe(request, pk):
+def unsubscribe(request, username):
     """Unsubscribe a user from an organization."""
-    organization = get_object_or_404(Organization, pk=pk)
+    organization = get_object_or_404(Organization, user__username=username)
 
     if not SubscriptionService.is_user_subscribed(request.user, organization):
         messages.info(request, f'You are not subscribed to {organization.name}.')
-        return redirect('organizations:detail', pk=organization.pk)
+        return redirect('organizations:detail', username=organization.user.username)
 
     if request.method == 'POST':
         success = SubscriptionService.delete_subscription(request.user, organization)
@@ -283,7 +290,7 @@ def unsubscribe(request, pk):
             messages.success(request, f'Successfully unsubscribed from {organization.name}.')
         else:
             messages.error(request, f'Failed to unsubscribe from {organization.name}.')
-        return redirect('organizations:detail', pk=organization.pk)
+        return redirect('organizations:detail', username=organization.user.username)
 
     return render(request, 'organizations/unsubscribe.html', {
         'organization': organization
@@ -295,9 +302,6 @@ def unsubscribe(request, pk):
 def subscribers(request):
     """View organization subscribers without preloading availability."""
     organization = OrganizationService.get_organization_for_user(request.user)
-    if not organization:
-        return redirect('organizations:create_profile')
-
     # Get subscriber data without availability
     subscriber_data = SubscriptionService.get_organization_subscribers(organization)
 
@@ -358,13 +362,9 @@ def subscribers(request):
 
 @login_required
 @organization_required
-def get_subscriber_availability(request, organization_id):
+def get_subscriber_availability(request, username):
     """AJAX endpoint to get availability for a specific subscriber."""
-    organization = get_object_or_404(Organization, id=organization_id)
-
-    # Verify organization ownership
-    if organization.user != request.user:
-        return JsonResponse({'error': 'Permission denied'}, status=403)
+    organization = get_object_or_404(Organization, user__username=username)
 
     subscriber_type = request.GET.get('type')  # 'user' or 'anonymous'
     subscriber_id = request.GET.get('id')
@@ -444,9 +444,6 @@ def get_subscriber_availability(request, organization_id):
 def availability_analytics(request):
     """View availability analytics for organization."""
     organization = OrganizationService.get_organization_for_user(request.user)
-    if not organization:
-        return redirect('organizations:create_profile')
-
     # Get date range from request
     start_date_str = request.GET.get('start_date')
     end_date_str = request.GET.get('end_date')
@@ -498,9 +495,9 @@ def availability_analytics(request):
 
 @login_required
 @organization_required
-def get_datetime_slot_details(request, organization_id):
+def get_datetime_slot_details(request, username):
     """Get datetime slot details via AJAX."""
-    organization = get_object_or_404(Organization, id=organization_id)
+    organization = get_object_or_404(Organization, user__username=username)
 
     # Verify organization ownership
     if organization.user != request.user:

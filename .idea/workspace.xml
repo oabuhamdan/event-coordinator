@@ -4,62 +4,54 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="fa558091-df30-483e-8806-eee85d2677a0" name="Changes" comment="init commit">
-      <change afterPath="$PROJECT_DIR$/accounts/services/availability_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/accounts/services/session_service.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/accounts/utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/services.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/templatetags/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/templatetags/event_tags.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/events/utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notifications/admin.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/notifications/utils.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/organizations/analytics.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/organizations/services.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/accounts/anonymous_profile.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/accounts/availability_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/accounts/register.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/components/event_card.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/components/loading_spinner.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/components/user_badge.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/events/anonymous_email_form.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/organizations/subscribe.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/templates/organizations/unsubscribe.html" afterDir="false" />
+    <list default="true" id="fa558091-df30-483e-8806-eee85d2677a0" name="Changes" comment="Style and Logic Edits">
+      <change afterPath="$PROJECT_DIR$/static/congruo-logo.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/static/congruo-logo2.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/notifications/sms/event_deletion.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/notifications/sms/event_notification.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/notifications/whatsapp/event_deletion.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/templates/notifications/whatsapp/event_notification.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.env.example" beforeDir="false" afterPath="$PROJECT_DIR$/.env.example" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/EventCoordinator/settings/dev.py" beforeDir="false" afterPath="$PROJECT_DIR$/EventCoordinator/settings/dev.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EventCoordinator/settings/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/EventCoordinator/settings/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/EventCoordinator/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/EventCoordinator/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/accounts/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/forms.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/accounts/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/accounts/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/urls.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/accounts/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/accounts/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/accounts/views.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/events/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/events/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/events/api_views.py" beforeDir="false" afterPath="$PROJECT_DIR$/events/api_views.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/events/api_urls.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/events/api_views.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/events/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/events/forms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/events/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/events/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/events/services.py" beforeDir="false" afterPath="$PROJECT_DIR$/events/services.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/events/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/events/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/events/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/events/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/notifications/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/notifications/models.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/notifications/tasks.py" beforeDir="false" afterPath="$PROJECT_DIR$/notifications/tasks.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/organizations/forms.py" beforeDir="false" afterPath="$PROJECT_DIR$/organizations/forms.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/organizations/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/organizations/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/organizations/services.py" beforeDir="false" afterPath="$PROJECT_DIR$/organizations/services.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/organizations/urls.py" beforeDir="false" afterPath="$PROJECT_DIR$/organizations/urls.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/organizations/views.py" beforeDir="false" afterPath="$PROJECT_DIR$/organizations/views.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/accounts/profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/anonymous_profile.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/anonymous_profile.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/availability_form.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/availability_form.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/accounts/register.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/accounts/register.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/base.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/base.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/events/analytics.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/analytics.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/events/create.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/create.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/events/delete.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/delete.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/events/detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/detail.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/events/edit.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/edit.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/events/respond.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/respond.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/events/set_anonymous_availability.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/set_anonymous_availability.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/events/set_availability.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/set_availability.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/events/list.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/events/list.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/notifications/email/anonymous_event_notification.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/notifications/email/event_deletion.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/notifications/email/event_notification.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/notifications/email/event_notification.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/organizations/anonymous_subscribe.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/organizations/anonymous_subscribe.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/organizations/availability_analytics.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/organizations/availability_analytics.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/organizations/dashboard.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/organizations/dashboard.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/organizations/detail.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/organizations/detail.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/organizations/list.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/organizations/list.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/organizations/subscribers.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/organizations/subscribers.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/registration/register_organization.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/registration/register_organization.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/registration/register_user.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/registration/register_user.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/organizations/subscribe.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/organizations/subscribe.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/templates/organizations/unsubscribe.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/organizations/unsubscribe.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -100,29 +92,30 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "DefaultHtmlFileTemplate": "HTML File",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.OpenDjangoStructureViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_opened_file_path": "/home/osama/PycharmProjects/EventCoordinator/templates/organizations",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "preferences.pluginManager"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.OpenDjangoStructureViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/osama/PycharmProjects/EventCoordinator/templates/notifications/sms&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/templates/notifications/sms" />
+      <recent name="$PROJECT_DIR$/templates/notifications/email" />
+      <recent name="$PROJECT_DIR$/static" />
       <recent name="$PROJECT_DIR$/templates/organizations" />
       <recent name="$PROJECT_DIR$/templates/events" />
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/templates" />
-      <recent name="$PROJECT_DIR$/EventCoordinator" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/EventCoordinator/settings" />
@@ -171,7 +164,12 @@
       <updated>1754856012186</updated>
       <workItem from="1754856013247" duration="1164000" />
       <workItem from="1754857188075" duration="26048000" />
-      <workItem from="1755000977665" duration="26021000" />
+      <workItem from="1755000977665" duration="26766000" />
+      <workItem from="1755361785044" duration="20428000" />
+      <workItem from="1755534523222" duration="17000" />
+      <workItem from="1755576088243" duration="1843000" />
+      <workItem from="1755618440892" duration="7000" />
+      <workItem from="1755995194034" duration="18000" />
     </task>
     <task id="LOCAL-00001" summary="init commit">
       <option name="closed" value="true" />
@@ -181,7 +179,15 @@
       <option name="project" value="LOCAL" />
       <updated>1754874736968</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Style and Logic Edits">
+      <option name="closed" value="true" />
+      <created>1755103404077</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1755103404077</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -200,6 +206,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="init commit" />
-    <option name="LAST_COMMIT_MESSAGE" value="init commit" />
+    <MESSAGE value="Style and Logic Edits" />
+    <option name="LAST_COMMIT_MESSAGE" value="Style and Logic Edits" />
   </component>
 </project>

@@ -4,396 +4,396 @@
 {% block title %}{{ event.title }} - Event Coordinator{% endblock %}
 
 {% block extra_css %}
-<style>
-.event-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 20px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-}
+    <style>
+        .event-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
 
-.response-card {
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
+        .response-card {
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
 
-.response-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-}
+        .response-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
 
-.response-card.selected {
-    border-color: #007bff;
-    background: rgba(0,123,255,0.1);
-}
+        .response-card.selected {
+            border-color: #007bff;
+            background: rgba(0, 123, 255, 0.1);
+        }
 
-.response-stats {
-    background: rgba(255,255,255,0.9);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 1.5rem;
-}
 
-.event-actions {
-    position: sticky;
-    top: 100px;
-    z-index: 100;
-}
+        .event-actions {
+            position: sticky;
+            top: 100px;
+            z-index: 100;
+        }
 
-@media (max-width: 768px) {
-    .event-header {
-        padding: 1.5rem;
-    }
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
 
-    .event-actions {
-        position: static;
-        margin-top: 2rem;
-    }
-}
-</style>
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-spinner {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .event-header {
+                padding: 1.5rem;
+            }
+
+            .event-actions {
+                position: static;
+                margin-top: 2rem;
+            }
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<!-- Event Header -->
-<div class="event-header">
-    <div class="row align-items-center">
-        <div class="col-md-8">
-            <div class="d-flex align-items-center mb-2">
-                <i class="fas fa-building me-2"></i>
-                <span class="badge bg-light text-dark">{{ event.organization.name }}</span>
-                <span class="badge bg-warning ms-2">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2 mb-0">Processing...</p>
+        </div>
+    </div>
+
+    <!-- Event Header -->
+    <div class="event-header">
+        <div class="row align-items-center">
+            <div class="col-md-12">
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-building me-2"></i>
+                    <span class="badge bg-light text-dark">{{ event.organization.name }}</span>
+                    <span class="badge bg-warning ms-2">
                     {% event_status_icon event as status_icon %}
                     <i class="{{ status_icon }} me-1"></i>
-                    {% if event.is_upcoming %}Upcoming{% else %}Past Event{% endif %}
+                        {% if event.is_upcoming %}Upcoming{% else %}Past Event{% endif %}
                 </span>
-            </div>
-            <h1 class="display-5 fw-bold mb-3">{{ event.title }}</h1>
-            <p class="lead mb-0">{{ event.description|default:"No description provided." }}</p>
-        </div>
-        <div class="col-md-4 text-end">
-            <div class="response-stats">
-                <h5 class="text-dark mb-3">
-                    <i class="fas fa-users me-2"></i>Responses
-                </h5>
-                <div class="row text-center">
-                    <div class="col-4">
-                        <div class="text-success">
-                            <i class="fas fa-check-circle fa-2x"></i>
-                            <div class="fw-bold">{{ response_counts.yes }}</div>
-                            <small>Yes</small>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="text-warning">
-                            <i class="fas fa-question-circle fa-2x"></i>
-                            <div class="fw-bold">{{ response_counts.maybe }}</div>
-                            <small>Maybe</small>
-                        </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="text-danger">
-                            <i class="fas fa-times-circle fa-2x"></i>
-                            <div class="fw-bold">{{ response_counts.no }}</div>
-                            <small>No</small>
-                        </div>
-                    </div>
                 </div>
+                <h1 class="display-5 fw-bold mb-3">{{ event.title }}</h1>
+                <p class="lead mb-0">{{ event.description|default:"No description provided." }}</p>
             </div>
         </div>
     </div>
-</div>
 
-<div class="row">
-    <!-- Event Details -->
-    <div class="col-lg-8">
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-transparent border-0">
-                <h4 class="mb-0">
-                    <i class="fas fa-info-circle me-2 text-primary"></i>Event Details
-                </h4>
-            </div>
-            <div class="card-body">
-                <div class="row g-4">
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-calendar fa-2x text-primary"></i>
+    <div class="row">
+        <!-- Event Details -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-transparent border-0">
+                    <h4 class="mb-0">
+                        <i class="fas fa-info-circle me-2 text-primary"></i>Event Details
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-calendar fa-2x text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">Start </h6>
+                                    <p class="mb-0">{{ event.start_datetime }}</p>
+                                </div>
                             </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-1">Date</h6>
-                                <p class="mb-0">{{ event.date_time|date:"F j, Y" }}</p>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-calendar fa-2x text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">End</h6>
+                                    <p class="mb-0">{{ event.end_datetime }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-map-marker-alt fa-2x text-primary"></i>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <h6 class="mb-1">Location</h6>
+                                    {% if event.location %}
+                                        <p class="mb-0">{{ event.location }}</p>
+                                    {% else %}
+                                        <p class="mb-0 text-muted">TBD</p>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
-
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-clock fa-2x text-primary"></i>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-1">Time</h6>
-                                <p class="mb-0">{{ event.date_time|time:"g:i A" }} - {{ event.end_time|time:"g:i A" }}</p>
-                                <small class="text-muted">({{ event.duration_hours }} hours)</small>
-                            </div>
-                        </div>
-                    </div>
-
-                    {% if event.location %}
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-map-marker-alt fa-2x text-primary"></i>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-1">Location</h6>
-                                <p class="mb-0">{{ event.location }}</p>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-
-                    {% if event.max_participants %}
-                    <div class="col-md-6">
-                        <div class="d-flex align-items-center">
-                            <div class="flex-shrink-0">
-                                <i class="fas fa-users fa-2x text-primary"></i>
-                            </div>
-                            <div class="flex-grow-1 ms-3">
-                                <h6 class="mb-1">Capacity</h6>
-                                <p class="mb-0">{{ event.max_participants }} participants</p>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
+
+            <!-- User Response Section -->
+            {% if can_respond and event.is_upcoming %}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <h4 class="mb-0">
+                            <i class="fas fa-reply me-2 text-success"></i>Your Response
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        {% if user_response %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                You responded: <strong>{{ user_response.get_response_display }}</strong>
+                                <small class="text-muted d-block">on {{ user_response.responded_at|date:"F j, Y g:i A" }}</small>
+                            </div>
+                        {% endif %}
+
+                        <div id="userResponseAlert" style="display: none;"></div>
+
+                        <p class="mb-3">Will you be attending this event?</p>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="response-card card text-center h-100 {% if user_response.response == 'yes' %}selected{% endif %}"
+                                     onclick="respondToEvent('yes')">
+                                    <div class="card-body">
+                                        <i class="fas fa-check-circle fa-3x text-success mb-2"></i>
+                                        <h5>Yes, I'll attend</h5>
+                                        <p class="text-muted mb-0">Count me in!</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="response-card card text-center h-100 {% if user_response.response == 'maybe' %}selected{% endif %}"
+                                     onclick="respondToEvent('maybe')">
+                                    <div class="card-body">
+                                        <i class="fas fa-question-circle fa-3x text-warning mb-2"></i>
+                                        <h5>Maybe</h5>
+                                        <p class="text-muted mb-0">I'm not sure yet</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="response-card card text-center h-100 {% if user_response.response == 'no' %}selected{% endif %}"
+                                     onclick="respondToEvent('no')">
+                                    <div class="card-body">
+                                        <i class="fas fa-times-circle fa-3x text-danger mb-2"></i>
+                                        <h5>No, can't attend</h5>
+                                        <p class="text-muted mb-0">Sorry, not available</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% elif not user.is_authenticated %}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-sign-in-alt fa-3x text-muted mb-3"></i>
+                        <h5>Want to respond to this event?</h5>
+                        <p class="text-muted mb-3">Please log in to RSVP and manage your event responses.</p>
+                        <a href="{% url 'accounts:login' %}" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt me-2"></i>Log In
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
         </div>
 
-        <!-- User Response Section -->
-        {% if can_respond and event.is_upcoming %}
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-transparent border-0">
-                <h4 class="mb-0">
-                    <i class="fas fa-reply me-2 text-success"></i>Your Response
-                </h4>
-            </div>
-            <div class="card-body">
-                {% if user_response %}
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        You responded: <strong>{{ user_response.get_response_display }}</strong>
-                        <small class="text-muted d-block">on {{ user_response.responded_at|date:"F j, Y g:i A" }}</small>
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="event-actions">
+                {% if user|is_organization and event.organization.user == user %}
+                    <!-- Organization Actions -->
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-transparent border-0">
+                            <h5 class="mb-0">
+                                <i class="fas fa-cog me-2"></i>Manage Event
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'events:edit' username=event.organization.user.username slug=event.slug %}"
+                                   class="btn btn-outline-primary">
+                                    <i class="fas fa-edit me-2"></i>Edit Event
+                                </a>
+                                <a href="{% url 'events:analytics' username=event.organization.user.username slug=event.slug %}"
+                                   class="btn btn-outline-info">
+                                    <i class="fas fa-chart-line me-2"></i>View Analytics
+                                </a>
+                                <button class="btn btn-outline-danger" onclick="confirmDelete()">
+                                    <i class="fas fa-trash me-2"></i>Delete Event
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 {% endif %}
 
-                <p class="mb-3">Will you be attending this event?</p>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <div class="response-card card text-center h-100 {% if user_response.response == 'yes' %}selected{% endif %}"
-                             onclick="respondToEvent('yes')">
-                            <div class="card-body">
-                                <i class="fas fa-check-circle fa-3x text-success mb-2"></i>
-                                <h5>Yes, I'll attend</h5>
-                                <p class="text-muted mb-0">Count me in!</p>
-                            </div>
+                <!-- Organization Info -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-transparent border-0">
+                        <h5 class="mb-0">
+                            <i class="fas fa-building me-2"></i>Organization
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-3">
+                            {% if event.organization.logo %}
+                                <img src="{{ event.organization.logo.url }}" alt="{{ event.organization.name }}"
+                                     class="img-fluid rounded-circle mb-2" style="max-width: 80px;">
+                            {% else %}
+                                <i class="fas fa-building fa-3x text-muted mb-2"></i>
+                            {% endif %}
+                            <h6 class="mb-1">{{ event.organization.name }}</h6>
+                            {% if event.organization.description %}
+                                <p class="text-muted small">{{ event.organization.description|truncatechars:100 }}</p>
+                            {% endif %}
                         </div>
-                    </div>
 
-                    <div class="col-md-4">
-                        <div class="response-card card text-center h-100 {% if user_response.response == 'maybe' %}selected{% endif %}"
-                             onclick="respondToEvent('maybe')">
-                            <div class="card-body">
-                                <i class="fas fa-question-circle fa-3x text-warning mb-2"></i>
-                                <h5>Maybe</h5>
-                                <p class="text-muted mb-0">I'm not sure yet</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="response-card card text-center h-100 {% if user_response.response == 'no' %}selected{% endif %}"
-                             onclick="respondToEvent('no')">
-                            <div class="card-body">
-                                <i class="fas fa-times-circle fa-3x text-danger mb-2"></i>
-                                <h5>No, can't attend</h5>
-                                <p class="text-muted mb-0">Sorry, not available</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        {% elif not user.is_authenticated %}
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center">
-                <i class="fas fa-sign-in-alt fa-3x text-muted mb-3"></i>
-                <h5>Want to respond to this event?</h5>
-                <p class="text-muted mb-3">Please log in to RSVP and manage your event responses.</p>
-                <a href="{% url 'accounts:login' %}" class="btn btn-primary">
-                    <i class="fas fa-sign-in-alt me-2"></i>Log In
-                </a>
-            </div>
-        </div>
-        {% endif %}
-    </div>
-
-    <!-- Sidebar -->
-    <div class="col-lg-4">
-        <div class="event-actions">
-            {% if user|is_organization and event.organization.user == user %}
-            <!-- Organization Actions -->
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-transparent border-0">
-                    <h5 class="mb-0">
-                        <i class="fas fa-cog me-2"></i>Manage Event
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'events:edit' pk=event.id %}" class="btn btn-outline-primary">
-                            <i class="fas fa-edit me-2"></i>Edit Event
-                        </a>
-                        <a href="{% url 'events:analytics' pk=event.id %}" class="btn btn-outline-info">
-                            <i class="fas fa-chart-line me-2"></i>View Analytics
-                        </a>
-                        <button class="btn btn-outline-danger" onclick="confirmDelete()">
-                            <i class="fas fa-trash me-2"></i>Delete Event
-                        </button>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Organization Info -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-header bg-transparent border-0">
-                    <h5 class="mb-0">
-                        <i class="fas fa-building me-2"></i>Organization
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <div class="text-center mb-3">
-                        {% if event.organization.logo %}
-                            <img src="{{ event.organization.logo.url }}" alt="{{ event.organization.name }}"
-                                 class="img-fluid rounded-circle mb-2" style="max-width: 80px;">
-                        {% else %}
-                            <i class="fas fa-building fa-3x text-muted mb-2"></i>
-                        {% endif %}
-                        <h6 class="mb-1">{{ event.organization.name }}</h6>
-                        {% if event.organization.description %}
-                            <p class="text-muted small">{{ event.organization.description|truncatechars:100 }}</p>
-                        {% endif %}
-                    </div>
-
-                    <div class="d-grid gap-2">
-                        <a href="{% url 'organizations:detail' pk=event.organization.id %}" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-eye me-1"></i>View Organization
-                        </a>
-                        {% if user.is_authenticated and user|is_regular_user_filter %}
-                            <a href="{% url 'organizations:subscribe' pk=event.organization.id %}" class="btn btn-success btn-sm">
-                                <i class="fas fa-bell me-1"></i>Subscribe
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'organizations:detail' username=event.organization.user.username %}"
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-eye me-1"></i>View Organization
                             </a>
-                        {% endif %}
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
 {% endblock %}
 
 {% block scripts %}
-<script>
-function respondToEvent(response) {
-    if (!{{ user.is_authenticated|yesno:"true,false" }}) {
-        window.location.href = "{% url 'accounts:login' %}";
-        return;
-    }
-
-    const formData = new FormData();
-    formData.append('response', response);
-    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-
-    showLoading();
-
-    fetch("{% url 'events:respond' pk=event.id %}", {
-        method: 'POST',
-        body: formData,
-    })
-    .then(response => response.json())
-    .then(data => {
-        hideLoading();
-        if (data.success) {
-            // Update response counts
-            updateResponseCounts(data.response_counts);
-
-            // Update selected card
-            document.querySelectorAll('.response-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            document.querySelector(`[onclick="respondToEvent('${response}')"]`).classList.add('selected');
-
-            // Show success message
-            showMessage('Response recorded successfully!', 'success');
-        } else {
-            showMessage(data.error || 'An error occurred', 'error');
+    <script>
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('show');
         }
-    })
-    .catch(error => {
-        hideLoading();
-        showMessage('Network error occurred', 'error');
-    });
-}
 
-function updateResponseCounts(counts) {
-    document.querySelector('.text-success .fw-bold').textContent = counts.yes;
-    document.querySelector('.text-warning .fw-bold').textContent = counts.maybe;
-    document.querySelector('.text-danger .fw-bold').textContent = counts.no;
-}
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('show');
+        }
 
-function confirmDelete() {
-    if (confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = "{% url 'events:delete' pk=event.id %}";
+        function respondToEvent(response) {
+            const formData = new FormData();
+            formData.append('response', response);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
-        const csrfInput = document.createElement('input');
-        csrfInput.type = 'hidden';
-        csrfInput.name = 'csrfmiddlewaretoken';
-        csrfInput.value = '{{ csrf_token }}';
-        form.appendChild(csrfInput);
+            showLoading();
 
-        document.body.appendChild(form);
-        showLoading();
-        form.submit();
-    }
-}
+            fetch("{% url 'events:respond' username=event.organization.user.username slug=event.slug %}", {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => {
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return response.json();
+                    } else {
+                        return {success: true};
+                    }
+                })
+                .then(data => {
+                    hideLoading();
+                    if (data.success) {
+                        // Update selected card
+                        document.querySelectorAll('.response-card').forEach(card => {
+                            card.classList.remove('selected');
+                        });
+                        document.querySelector(`[onclick="respondToEvent('${response}')"]`).classList.add('selected');
 
-function showMessage(message, type) {
-    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
-    const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+                        // Update the existing response info
+                        const existingAlert = document.querySelector('.alert.alert-info');
+                        if (existingAlert) {
+                            const responseDisplay = response.charAt(0).toUpperCase() + response.slice(1);
+                            const currentDate = new Date().toLocaleString();
+                            existingAlert.innerHTML = `
+                    <i class="fas fa-info-circle me-2"></i>
+                    You responded: <strong>${responseDisplay}</strong>
+                    <small class="text-muted d-block">on ${currentDate}</small>
+                `;
+                        }
+                    } else {
+                        showResponseAlert(data.error || 'An error occurred', 'danger');
+                    }
+                })
+                .catch(error => {
+                    hideLoading();
+                    showResponseAlert('Unable to save response. Please try again.', 'danger');
+                });
+        }
 
-    const alertHtml = `
+
+        function showResponseAlert(message, type) {
+            const alertDiv = document.getElementById('userResponseAlert');
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const icon = type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-triangle';
+
+            alertDiv.innerHTML = `
         <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
             <i class="${icon} me-2"></i>${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     `;
+            alertDiv.style.display = 'block';
 
-    const container = document.querySelector('.container');
-    container.insertAdjacentHTML('afterbegin', alertHtml);
-
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        const alert = container.querySelector('.alert');
-        if (alert) {
-            const bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                const alert = alertDiv.querySelector('.alert');
+                if (alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
         }
-    }, 5000);
-}
-</script>
+
+        function confirmDelete() {
+            if (confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{% url 'events:delete' username=event.organization.user.username slug=event.slug %}";
+
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrfmiddlewaretoken';
+                csrfInput.value = '{{ csrf_token }}';
+                form.appendChild(csrfInput);
+
+                document.body.appendChild(form);
+                showLoading();
+                form.submit();
+            }
+        }
+    </script>
 {% endblock %}

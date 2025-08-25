@@ -1,0 +1,12 @@
+🎉 *New Event from {{ organization.name }}*
+
+📅 *{{ event.title }}*
+🗓️ {{ event.start_datetime|date:"F d, Y" }} at {{ event.start_datetime|time:"g:i A" }}
+📍 {{ event.location|default:"Location TBD" }}
+
+{{ event.description|truncatechars:100 }}
+
+🔗 View details: {{ event_url }}
+✅ Respond: {{ respond_url }}
+
+{% if is_anonymous %}💡 _Create a free account for more features!_{% endif %}

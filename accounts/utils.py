@@ -86,11 +86,11 @@ def organization_owner_required(view_func):
             raise PermissionDenied("Only organizations can access this page.")
         
         # Check if user owns the organization being accessed
-        organization_id = kwargs.get('pk') or kwargs.get('organization_id')
-        if organization_id:
+        username = kwargs.get('username')
+        if username:
             try:
                 organization = request.user.organization
-                if organization.id != int(organization_id):
+                if organization.user.username != username:
                     raise PermissionDenied("You can only access your own organization.")
             except:
                 raise PermissionDenied("Organization not found.")

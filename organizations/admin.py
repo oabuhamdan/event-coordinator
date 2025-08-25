@@ -3,8 +3,7 @@ from .models import Organization, Subscription
 
 @admin.register(Organization)
 class OrganizationAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user', 'notification_type', 'created_at')
-    list_filter = ('notification_type', 'created_at')
+    list_display = ('name', 'user', 'created_at')
     search_fields = ('name', 'user__username')
 
 @admin.register(Subscription)
